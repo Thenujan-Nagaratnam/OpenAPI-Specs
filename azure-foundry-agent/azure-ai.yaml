@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  title: Azure AI Foundry Agent Service REST API
+  title: Azure AI Service REST API
   description: |
-    This OpenAPI specification defines the Azure AI Foundry Agent Service REST API.
+    This OpenAPI specification defines the Azure AI Service REST API.
     It is a stateful, resource-oriented API for creating, managing, and running sophisticated AI agents (also known as Assistants).[9, 10]
     The API follows the same protocol as the Azure OpenAI Assistants API, allowing for the use of compatible tools and SDKs.[9]
   version: "2025-05-16"
@@ -21,7 +21,8 @@ paths:
     get:
       operationId: List_Assistants
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Returns a list of assistants.
       parameters:
         - name: project-name
@@ -85,7 +86,8 @@ paths:
     post:
       operationId: Create_Assistant
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Create an assistant with a model and instructions.
       parameters:
         - name: project-name
@@ -118,7 +120,8 @@ paths:
     get:
       operationId: Get_Assistant
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieves an assistant.
       parameters:
         - name: project-name
@@ -150,7 +153,8 @@ paths:
     post:
       operationId: Modify_Assistant
       tags:
-        - Assistant
+        - AI Agents
+          - Assistants
       summary: Modifies an assistant.
       parameters:
         - name: project-name
@@ -188,7 +192,8 @@ paths:
     delete:
       operationId: Delete_Assistant
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Delete an assistant.
       parameters:
         - name: project-name
@@ -221,7 +226,8 @@ paths:
     get:
       operationId: List_Files
       tags:
-        - Files
+        - AI Agents
+          - Files
       summary: Gets a list of previously uploaded files.
       parameters:
         - name: project-name
@@ -253,7 +259,8 @@ paths:
     post:
       operationId: Upload_File
       tags:
-        - Files
+        - AI Agents
+          - Files
       summary: Uploads a file for use by other operations.
       parameters:
         - name: project-name
@@ -300,7 +307,8 @@ paths:
     get:
       operationId: Get_File
       tags:
-        - Files
+        - AI Agents
+          - Files
       summary: Returns information about a specific file. Does not retrieve file content.
       parameters:
         - name: project-name
@@ -332,7 +340,8 @@ paths:
     delete:
       operationId: Delete_File
       tags:
-        - Files
+        - AI Agents
+          - Files
       summary: Delete a previously uploaded file.
       parameters:
         - name: project-name
@@ -365,7 +374,8 @@ paths:
     get:
       operationId: Get_File_Content
       tags:
-        - Files
+        - AI Agents
+          - Files
       summary: Retrieves the raw content of a specific file.
       parameters:
         - name: project-name
@@ -402,7 +412,8 @@ paths:
     post:
       operationId: Create_Thread
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Create a thread.
       parameters:
         - name: project-name
@@ -435,7 +446,8 @@ paths:
       summary: Gets a list of threads that were previously created.
       operationId: listThreads
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       parameters:
         - name: project-name
           in: path
@@ -499,7 +511,8 @@ paths:
     get:
       operationId: Get_Thread
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieves a thread.
       parameters:
         - name: project-name
@@ -531,7 +544,8 @@ paths:
     post:
       operationId: Modify_Thread
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Modifies a thread.
       parameters:
         - name: project-name
@@ -569,7 +583,8 @@ paths:
     delete:
       operationId: Delete_Thread
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Delete a thread.
       parameters:
         - name: project-name
@@ -602,7 +617,8 @@ paths:
     get:
       operationId: List_Messages
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Returns a list of messages for a given thread.
       parameters:
         - name: project-name
@@ -677,7 +693,8 @@ paths:
     post:
       operationId: Create_Message
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Create a message.
       parameters:
         - name: project-name
@@ -716,7 +733,8 @@ paths:
     get:
       operationId: Get_Message
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieve a message.
       parameters:
         - name: project-name
@@ -754,7 +772,8 @@ paths:
     post:
       operationId: Modify_Message
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Modifies a message.
       parameters:
         - name: project-name
@@ -798,7 +817,8 @@ paths:
     delete:
       operationId: Delete_Message
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Deletes an existing message on an existing thread.
       parameters:
         - name: project-name
@@ -838,7 +858,8 @@ paths:
     post:
       operationId: Create_Thread_And_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Create a thread and run it in one request.
       parameters:
         - name: project-name
@@ -871,7 +892,8 @@ paths:
     get:
       operationId: List_Runs
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Returns a list of runs belonging to a thread.
       parameters:
         - name: project-name
@@ -937,7 +959,8 @@ paths:
     post:
       operationId: Create_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Create a run.
       parameters:
         - name: project-name
@@ -995,7 +1018,8 @@ paths:
     get:
       operationId: Get_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieves a run.
       parameters:
         - name: project-name
@@ -1033,7 +1057,8 @@ paths:
     post:
       operationId: Modify_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Modifies a run.
       parameters:
         - name: project-name
@@ -1078,7 +1103,8 @@ paths:
     post:
       operationId: Submit_Tool_Outputs_To_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: |
         When a run has the `status: "requires_action"` and `required_action.type` is `submit_tool_outputs`, this endpoint can be used to submit the outputs from the tool calls once they're all completed. All outputs must be submitted in a single request.
       parameters:
@@ -1124,7 +1150,8 @@ paths:
     post:
       operationId: Cancel_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Cancels a run that is `in_progress`.
       parameters:
         - name: project-name
@@ -1163,7 +1190,8 @@ paths:
     get:
       operationId: List_Run_Steps
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Returns a list of run steps belonging to a run.
       parameters:
         - name: project-name
@@ -1255,7 +1283,8 @@ paths:
     get:
       operationId: Get_Run_Step
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieves a run step.
       parameters:
         - name: project-name
@@ -1319,7 +1348,8 @@ paths:
     get:
       operationId: List_Vector_Stores
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Returns a list of vector stores.
       parameters:
         - name: project-name
@@ -1375,7 +1405,8 @@ paths:
     post:
       operationId: Create_Vector_Store
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Create a vector store.
       requestBody:
         required: true
@@ -1408,7 +1439,8 @@ paths:
     get:
       operationId: Get_Vector_Store
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Retrieves a vector store.
       parameters:
         - name: project-name
@@ -1440,7 +1472,8 @@ paths:
     post:
       operationId: Modify_Vector_Store
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Modifies a vector store.
       parameters:
         - name: project-name
@@ -1478,7 +1511,8 @@ paths:
     delete:
       operationId: Delete_Vector_Store
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Delete a vector store.
       parameters:
         - name: project-name
@@ -1511,7 +1545,8 @@ paths:
     get:
       operationId: List_Vector_Store_Files
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Returns a list of vector store files.
       parameters:
         - name: project-name
@@ -1587,7 +1622,8 @@ paths:
     post:
       operationId: Create_Vector_Store_File
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Create a vector store file by attaching a [File](/docs/api-reference/files) to a [vector store](/docs/api-reference/vector-stores/object).
       parameters:
         - name: project-name
@@ -1628,7 +1664,8 @@ paths:
     get:
       operationId: Get_Vector_Store_File
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Retrieves a vector store file.
       parameters:
         - name: project-name
@@ -1668,7 +1705,8 @@ paths:
     delete:
       operationId: Delete_Vector_Store_File
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Delete a vector store file. This will remove the file from the vector store but the file itself will not be deleted. To delete the file, use the [delete file](/docs/api-reference/files/delete) endpoint.
       parameters:
         - name: project-name
@@ -1706,7 +1744,8 @@ paths:
     # post:
     #   operationId: updateVectorStoreFileAttributes
     #   tags:
-    #     - Vector stores
+    #     - AI Agents
+    #       - Vector Stores
     #   summary: Update attributes on a vector store file.
     #   parameters:
     #     - in: path
@@ -1740,7 +1779,8 @@ paths:
   #   get:
   #     operationId: retrieveVectorStoreFileContent
   #     tags:
-  #       - Vector stores
+  #       - AI Agents
+  #         - Vector Stores
   #     summary: Retrieve the parsed contents of a vector store file.
   #     parameters:
   #       - in: path
@@ -1768,7 +1808,8 @@ paths:
   #   post:
   #     operationId: searchVectorStore
   #     tags:
-  #       - Vector stores
+  #       - AI Agents
+  #         - Vector Stores
   #     summary: Search a vector store for relevant chunks based on a query and file
   #       attributes filter.
   #     parameters:
@@ -1796,7 +1837,8 @@ paths:
     post:
       operationId: Create_Vector_Store_File_Batch
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Create a vector store file batch.
       parameters:
         - name: project-name
@@ -1837,7 +1879,8 @@ paths:
     get:
       operationId: Get_Vector_Store_File_Batch
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Retrieves a vector store file batch.
       parameters:
         - name: project-name
@@ -1878,7 +1921,8 @@ paths:
     post:
       operationId: Cancel_Vector_Store_File_Batch
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Cancel a vector store file batch. This attempts to cancel the processing of files in this batch as soon as possible.
       parameters:
         - name: project-name
@@ -1917,7 +1961,8 @@ paths:
     get:
       operationId: List_Vector_Store_File_Batch_Files
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Returns a list of vector store files in a batch.
       parameters:
         - name: project-name
@@ -2111,7 +2156,8 @@ paths:
   /api/projects/{project-name}/connections/{name}:
     get:
       tags:
-        - Connections
+        - AI Projects
+          - Connections
       summary: Get Connection
       description: Get a connection by name, without populating connection credentials
       operationId: getConnection
@@ -2157,7 +2203,8 @@ paths:
   /api/projects/{project-name}/connections/{name}/getConnectionWithCredentials:
     post:
       tags:
-        - Connections
+        - AI Projects
+          - Connections
       summary: Get Connection With Credentials
       description: Get a connection by name, with its connection credentials
       operationId: getConnectionWithCredentials
@@ -2203,7 +2250,8 @@ paths:
   /api/projects/{project-name}/connections:
     get:
       tags:
-        - Connections
+        - AI Projects
+          - Connections
       summary: List Connections
       description: List all connections in the project without including credentials
       operationId: listConnections
@@ -2255,7 +2303,8 @@ paths:
   /api/projects/{project-name}/datasets/{name}/versions/{version}:
     patch:
       tags:
-        - Datasets
+        - AI Projects
+          - Datasets
       summary: Create or Update Dataset Version
       description: Creates a new or updates an existing dataset version with the given version ID
       operationId: createOrUpdateDatasetVersion
@@ -2322,7 +2371,8 @@ paths:
                 $ref: '#/components/schemas/DatasetVersion'
     delete:
       tags:
-        - Datasets
+        - AI Projects
+          - Datasets
       summary: Delete Dataset Version
       description: Deletes the specified version of the dataset. Returns 204 No Content if successful or if the dataset version does not exist
       operationId: deleteDatasetVersion
@@ -2369,7 +2419,8 @@ paths:
                 type: string
     get:
       tags:
-        - Datasets
+        - AI Projects
+          - Datasets
       summary: Get Dataset Version
       description: Retrieves the specified version of the dataset
       operationId: getDatasetVersion
@@ -2421,7 +2472,8 @@ paths:
   /api/projects/{project-name}/datasets/{name}/versions/{version}/getCredentials:
     post:
       tags:
-        - Datasets
+        - AI Projects
+          - Datasets
       summary: Get Dataset Version Credentials
       description: Retrieves the credentials for the specified dataset version
       operationId: getDatasetCredentials
@@ -2473,7 +2525,8 @@ paths:
   /api/projects/{project-name}/datasets/{name}/versions:
     get:
       tags:
-        - Datasets
+        - AI Projects
+          - Datasets
       summary: List Dataset Versions
       description: Retrieves all versions of the specified dataset
       operationId: listDatasetVersions
@@ -2519,7 +2572,8 @@ paths:
   /api/projects/{project-name}/datasets/{name}/versions/latest:
     get:
       tags:
-        - Datasets
+        - AI Projects
+          - Datasets
       summary: List Latest Dataset Versions
       description: Retrieves the latest versions of datasets
       operationId: listLatestDatasets
@@ -2565,7 +2619,8 @@ paths:
   /api/projects/{project-name}/datasets/{name}/versions/{version}/startPendingUpload:
     post:
       tags:
-        - Datasets
+        - AI Projects
+          - Datasets
       summary: Start Pending Upload Version
       description: Starts the pending upload process for the specified dataset version
       operationId: startPendingUploadVersion
@@ -2617,7 +2672,8 @@ paths:
   /api/projects/{project-name}/deployments/{name}:
     get:
       tags:
-        - Deployments
+        - AI Projects
+          - Deployments
       summary: Get Deployment
       description: Get a deployment by name
       operationId: getDeployment
@@ -2663,7 +2719,8 @@ paths:
   /api/projects/{project-name}/deployments:
     get:
       tags:
-        - Deployments
+        - AI Projects
+          - Deployments
       summary: List Deployments
       description: List all deployments in the project
       operationId: listDeployments
@@ -2703,7 +2760,8 @@ paths:
   /api/projects/{project-name}/indexes/{name}/versions/{version}:
     patch:
       tags:
-        - Indexes
+        - AI Projects
+          - Indexes
       summary: Create or Update Index Version
       description: Creates a new or updates an existing index version with the given version ID
       operationId: createOrUpdateIndexVersion
@@ -2770,7 +2828,8 @@ paths:
                 $ref: '#/components/schemas/IndexVersion'
     delete:
       tags:
-        - Indexes
+        - AI Projects
+          - Indexes
       summary: Delete Index Version
       description: Deletes the specified version of the index. Returns 204 No Content if successful or if the index version does not exist
       operationId: deleteIndexVersion
@@ -2817,7 +2876,8 @@ paths:
                 type: string
     get:
       tags:
-        - Indexes
+        - AI Projects
+          - Indexes
       summary: Get Index Version
       description: Retrieves the specified version of the index
       operationId: getIndexVersion
@@ -2869,7 +2929,8 @@ paths:
   /api/projects/{project-name}/indexes/{name}/versions:
     get:
       tags:
-        - Indexes
+        - AI Projects
+          - Indexes
       summary: List Index Versions
       description: Retrieves all versions of the specified index
       operationId: listIndexVersions
@@ -2915,7 +2976,8 @@ paths:
   /api/projects/{project-name}/indexes/{name}/versions/latest:
     get:
       tags:
-        - Indexes
+        - AI Projects
+          - Indexes
       summary: List Latest Index Versions
       description: Retrieves the latest versions of indexes
       operationId: listLatestIndexes
