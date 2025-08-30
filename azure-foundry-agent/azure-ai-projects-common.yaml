@@ -1,0 +1,1274 @@
+openapi: 3.0.3
+info:
+  title: Azure AI Projects API
+  description: |
+    This OpenAPI specification defines the Azure AI Projects API, which provides endpoints for managing connections, datasets, deployments, and indexes within Azure AI Foundry projects.
+    The API allows developers to interact with Azure AI services to manage project resources, configure data sources, and deploy AI models.
+    This specification is based on the official Microsoft REST API documentation for the v1 version.
+  version: "v1"
+  contact:
+    name: Microsoft Azure AI
+    url: https://{resource-name}.services.ai.azure.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: "https://{resource-name}.services.ai.azure.com"
+    description: Azure AI Services project endpoint
+    variables:
+      resource-name:
+        default: your-resource-name
+        description: The name of your specific Azure AI Services resource.
+      project-name:
+        default: your-project-name
+        description: The name of your Azure AI Foundry project.
+security:
+  - bearer:
+      - api.read
+  - apiKey: []
+paths:
+  /api/projects/{project-name}/connections/{name}:
+    get:
+      tags:
+        - Connections
+      summary: Get Connection
+      description: Get a connection by name, without populating connection credentials
+      operationId: getConnection
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The friendly name of the connection, provided by the user.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connection'
+  /api/projects/{project-name}/connections/{name}/getConnectionWithCredentials:
+    post:
+      tags:
+        - Connections
+      summary: Get Connection With Credentials
+      description: Get a connection by name, with its connection credentials
+      operationId: getConnectionWithCredentials
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The friendly name of the connection, provided by the user.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connection'
+  /api/projects/{project-name}/connections:
+    get:
+      tags:
+        - Connections
+      summary: List Connections
+      description: List all connections in the project without including credentials
+      operationId: listConnections
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: connectionType
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ConnectionType'
+          description: Filter connections by this specific type.
+        - name: defaultConnection
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter to list only default connections.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedConnection'
+  /api/projects/{project-name}/datasets/{name}/versions/{version}:
+    patch:
+      tags:
+        - Datasets
+      summary: Create or Update Dataset Version
+      description: Creates a new or updates an existing dataset version with the given version ID
+      operationId: createOrUpdateDatasetVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/DatasetVersion'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetVersion'
+        '201':
+          description: The request has succeeded and a new resource has been created.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetVersion'
+    delete:
+      tags:
+        - Datasets
+      summary: Delete Dataset Version
+      description: Deletes the specified version of the dataset. Returns 204 No Content if successful or if the dataset version does not exist
+      operationId: deleteDatasetVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '204':
+          description: There is no content to send for this request, but the headers may be useful.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+    get:
+      tags:
+        - Datasets
+      summary: Get Dataset Version
+      description: Retrieves the specified version of the dataset
+      operationId: getDatasetVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetVersion'
+  /api/projects/{project-name}/datasets/{name}/versions/{version}/getCredentials:
+    post:
+      tags:
+        - Datasets
+      summary: Get Dataset Version Credentials
+      description: Retrieves the credentials for the specified dataset version
+      operationId: getDatasetCredentials
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetCredentials'
+  /api/projects/{project-name}/datasets/{name}/versions:
+    get:
+      tags:
+        - Datasets
+      summary: List Dataset Versions
+      description: Retrieves all versions of the specified dataset
+      operationId: listDatasetVersions
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDatasetVersion'
+  /api/projects/{project-name}/datasets/{name}/versions/latest:
+    get:
+      tags:
+        - Datasets
+      summary: List Latest Dataset Versions
+      description: Retrieves the latest versions of datasets
+      operationId: listLatestDatasets
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDatasetVersion'
+  /api/projects/{project-name}/datasets/{name}/versions/{version}/startPendingUpload:
+    post:
+      tags:
+        - Datasets
+      summary: Start Pending Upload Version
+      description: Starts the pending upload process for the specified dataset version
+      operationId: startPendingUploadVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingUploadCredential'
+  /api/projects/{project-name}/deployments/{name}:
+    get:
+      tags:
+        - Deployments
+      summary: Get Deployment
+      description: Get a deployment by name
+      operationId: getDeployment
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the deployment.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+  /api/projects/{project-name}/deployments:
+    get:
+      tags:
+        - Deployments
+      summary: List Deployments
+      description: List all deployments in the project
+      operationId: listDeployments
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDeployment'
+  /api/projects/{project-name}/indexes/{name}/versions/{version}:
+    patch:
+      tags:
+        - Indexes
+      summary: Create or Update Index Version
+      description: Creates a new or updates an existing index version with the given version ID
+      operationId: createOrUpdateIndexVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the index version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/IndexVersion'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexVersion'
+        '201':
+          description: The request has succeeded and a new resource has been created.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexVersion'
+    delete:
+      tags:
+        - Indexes
+      summary: Delete Index Version
+      description: Deletes the specified version of the index. Returns 204 No Content if successful or if the index version does not exist
+      operationId: deleteIndexVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the index version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '204':
+          description: There is no content to send for this request, but the headers may be useful.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+    get:
+      tags:
+        - Indexes
+      summary: Get Index Version
+      description: Retrieves the specified version of the index
+      operationId: getIndexVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the index version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexVersion'
+  /api/projects/{project-name}/indexes/{name}/versions:
+    get:
+      tags:
+        - Indexes
+      summary: List Index Versions
+      description: Retrieves all versions of the specified index
+      operationId: listIndexVersions
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedIndexVersion'
+  /api/projects/{project-name}/indexes/{name}/versions/latest:
+    get:
+      tags:
+        - Indexes
+      summary: List Latest Index Versions
+      description: Retrieves the latest versions of indexes
+      operationId: listLatestIndexes
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "v1"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedIndexVersion'
+
+components:
+  schemas:
+    Connection:
+      type: object
+      description: Response from the list and get connections operations
+      properties:
+        name:
+          type: string
+          description: The friendly name of the connection, provided by the user.
+        id:
+          type: string
+          description: A unique identifier for the connection, generated by the service
+        type:
+          $ref: '#/components/schemas/ConnectionType'
+          description: Category of the connection
+        target:
+          type: string
+          description: The connection URL to be used for this service
+        isDefault:
+          type: boolean
+          description: Whether the connection is tagged as the default connection of its type
+        credentials:
+          oneOf:
+            - $ref: '#/components/schemas/ApiKeyCredentials'
+            - $ref: '#/components/schemas/CustomCredential'
+            - $ref: '#/components/schemas/EntraIDCredentials'
+            - $ref: '#/components/schemas/NoAuthenticationCredentials'
+            - $ref: '#/components/schemas/SASCredentials'
+          description: The credentials used by the connection
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Metadata of the connection
+    ConnectionType:
+      type: string
+      enum:
+        - AzureOpenAI
+        - AzureBlob
+        - AzureStorageAccount
+        - CognitiveSearch
+        - CosmosDB
+        - ApiKey
+        - AppConfig
+        - AppInsights
+        - CustomKeys
+      description: |
+        The Type (or category) of the connection:
+        - AzureOpenAI: Azure OpenAI Service
+        - AzureBlob: Azure Blob Storage, with specified container
+        - AzureStorageAccount: Azure Blob Storage, with container not specified (used by Agents)
+        - CognitiveSearch: Azure AI Search
+        - CosmosDB: CosmosDB
+        - ApiKey: Generic connection that uses API Key authentication
+        - AppConfig: Application Configuration
+        - AppInsights: Application Insights
+        - CustomKeys: Custom Keys
+    ApiKeyCredentials:
+      type: object
+      description: API Key Credential definition
+      required:
+        - type
+        - key
+      properties:
+        type:
+          type: string
+          enum: [ApiKey]
+          description: The type of credential used by the connection
+        key:
+          type: string
+          description: API Key
+    CustomCredential:
+      type: object
+      description: Custom credential definition
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [CustomKeys]
+          description: The type of credential used by the connection
+        keys:
+          type: object
+          description: The credential type
+    EntraIDCredentials:
+      type: object
+      description: Entra ID credential definition
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [AAD]
+          description: The type of credential used by the connection
+    NoAuthenticationCredentials:
+      type: object
+      description: Credentials that do not require authentication
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [None]
+          description: The type of credential used by the connection
+    SASCredentials:
+      type: object
+      description: Shared Access Signature (SAS) credential definition
+      required:
+        - type
+        - SAS
+      properties:
+        type:
+          type: string
+          enum: [SAS]
+          description: The type of credential used by the connection
+        SAS:
+          type: string
+          description: SAS token
+    PagedConnection:
+      type: object
+      description: Paged collection of Connection objects
+      properties:
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connection'
+          description: The list of connections.
+        nextLink:
+          type: string
+          description: The URL to the next page of results.
+    DatasetVersion:
+      type: object
+      description: Dataset version information
+      properties:
+        name:
+          type: string
+          description: The name of the dataset.
+        version:
+          type: string
+          description: The version ID of the dataset version.
+        description:
+          type: string
+          description: Description of the dataset version.
+        dataPath:
+          type: string
+          description: Path to the dataset data.
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+          description: Additional properties for the dataset version.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Tags associated with the dataset version.
+        createdBy:
+          type: string
+          description: User who created the dataset version.
+        createdDate:
+          type: string
+          format: date-time
+          description: Date when the dataset version was created.
+        modifiedBy:
+          type: string
+          description: User who last modified the dataset version.
+        modifiedDate:
+          type: string
+          format: date-time
+          description: Date when the dataset version was last modified.
+    PagedDatasetVersion:
+      type: object
+      description: Paged collection of DatasetVersion objects
+      properties:
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatasetVersion'
+          description: The list of dataset versions.
+        nextLink:
+          type: string
+          description: The URL to the next page of results.
+    DatasetCredentials:
+      type: object
+      description: Credentials for accessing a dataset
+      properties:
+        credentialType:
+          type: string
+          description: The type of credential.
+        connectionString:
+          type: string
+          description: Connection string for the dataset.
+        accountKey:
+          type: string
+          description: Account key for authentication.
+        sasToken:
+          type: string
+          description: SAS token for authentication.
+        containerName:
+          type: string
+          description: Container name for blob storage.
+    PendingUploadCredential:
+      type: object
+      description: Credentials for pending upload operations
+      properties:
+        uploadUrl:
+          type: string
+          description: URL for uploading the dataset.
+        sasToken:
+          type: string
+          description: SAS token for upload authentication.
+        expiryTime:
+          type: string
+          format: date-time
+          description: Expiry time for the upload credentials.
+    Deployment:
+      type: object
+      description: AI model deployment information
+      properties:
+        name:
+          type: string
+          description: The name of the deployment.
+        id:
+          type: string
+          description: Unique identifier for the deployment.
+        modelName:
+          type: string
+          description: Name of the deployed model.
+        modelVersion:
+          type: string
+          description: Version of the deployed model.
+        status:
+          type: string
+          enum: [Creating, Running, Failed, Deleting]
+          description: Current status of the deployment.
+        endpoint:
+          type: string
+          description: Endpoint URL for the deployment.
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+          description: Additional properties for the deployment.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Tags associated with the deployment.
+        createdBy:
+          type: string
+          description: User who created the deployment.
+        createdDate:
+          type: string
+          format: date-time
+          description: Date when the deployment was created.
+        modifiedBy:
+          type: string
+          description: User who last modified the deployment.
+        modifiedDate:
+          type: string
+          format: date-time
+          description: Date when the deployment was last modified.
+    PagedDeployment:
+      type: object
+      description: Paged collection of Deployment objects
+      properties:
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/Deployment'
+          description: The list of deployments.
+        nextLink:
+          type: string
+          description: The URL to the next page of results.
+    IndexVersion:
+      type: object
+      description: Search index version information
+      properties:
+        name:
+          type: string
+          description: The name of the index.
+        version:
+          type: string
+          description: The version ID of the index version.
+        description:
+          type: string
+          description: Description of the index version.
+        indexPath:
+          type: string
+          description: Path to the index data.
+        vectorSize:
+          type: integer
+          description: Size of the vectors in the index.
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+          description: Additional properties for the index version.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Tags associated with the index version.
+        createdBy:
+          type: string
+          description: User who created the index version.
+        createdDate:
+          type: string
+          format: date-time
+          description: Date when the index version was created.
+        modifiedBy:
+          type: string
+          description: User who last modified the index version.
+        modifiedDate:
+          type: string
+          format: date-time
+          description: Date when the index version was last modified.
+    PagedIndexVersion:
+      type: object
+      description: Paged collection of IndexVersion objects
+      properties:
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/IndexVersion'
+          description: The list of index versions.
+        nextLink:
+          type: string
+          description: The URL to the next page of results.
+    Azure.Core.Foundations.ErrorResponse:
+      type: object
+      description: A response containing error details.
+      required:
+        - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Azure.Core.Foundations.Error'
+          description: The error object.
+    Azure.Core.Foundations.Error:
+      type: object
+      description: The error object.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: One of a server-defined set of error codes.
+        message:
+          type: string
+          description: A human-readable representation of the error.
+        target:
+          type: string
+          description: The target of the error.
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/Azure.Core.Foundations.Error'
+          description: An array of details about specific errors that led to this reported error.
+        innererror:
+          $ref: '#/components/schemas/Azure.Core.Foundations.InnerError'
+          description: An object containing more specific information than the current object about the error.
+    Azure.Core.Foundations.InnerError:
+      type: object
+      description: An object containing more specific information about the error. As per Azure REST API guidelines - https://aka.ms/AzureRestApiGuidelines#handling-errors.
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: One of a server-defined set of error codes.
+        innererror:
+          $ref: '#/components/schemas/Azure.Core.Foundations.InnerError'
+          description: Inner error.
+  securitySchemes:
+    bearer:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes: {}
+      x-tokenInfoFunc: api.middleware.auth.bearer_auth
+      x-scopeValidateFunc: api.middleware.auth.validate_scopes
+    apiKey:
+      type: apiKey
+      name: api-key
+      in: header
+    OAuth2Auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes:
+            https://ai.azure.com/.default: ""

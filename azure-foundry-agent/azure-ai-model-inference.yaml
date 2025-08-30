@@ -1,0 +1,660 @@
+openapi: 3.0.3
+info:
+  title: Azure AI Model Inference API
+  description: |
+    This OpenAPI specification defines the Azure AI Model Inference API, which provides a unified, stateless endpoint for consuming predictions from a diverse set of foundation models.[1] 
+    It allows developers to interact with different models using a consistent schema for operations like chat completions, text embeddings, and image embeddings.[2]
+    This specification is based on the official Microsoft REST API documentation for the `2024-05-01-preview` version.
+  version: "2024-05-01-preview"
+servers:
+  - url: https://{resource-name}.services.ai.azure.com
+    description: Base URL for the Azure AI Model Inference API.[3, 4]
+    variables:
+      resource-name:
+        default: your-resource-name
+        description: The name of your specific Azure AI Services resource.
+security:
+  - bearer:
+      - api.read
+  - apiKey: []
+paths:
+  /models/chat/completions:
+    post:
+      tags:
+        - Model Inference
+      summary: Create Chat Completion
+      description: Creates a model response for the given chat conversation.[2]
+      operationId: createChatCompletion
+      parameters:
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "2024-05-01-preview"
+        - name: extra-parameters
+          in: header
+          required: false
+          schema:
+            $ref: '#/components/schemas/ExtraParameters'
+          description: Controls what happens if extra parameters are passed in the request payload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+  /models/embeddings:
+    post:
+      tags:
+        - Model Inference
+      summary: Create Text Embeddings
+      description: Creates an embedding vector representing the input text.[2]
+      operationId: createTextEmbedding
+      parameters:
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "2024-05-01-preview"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmbeddingRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingResponse'
+  /models/images/embeddings:
+    post:
+      tags:
+        - Model Inference
+      summary: Create Image Embeddings
+      description: Creates an embedding vector representing the input text and image.[2]
+      operationId: createImageEmbedding
+      parameters:
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "2024-05-01-preview"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageEmbeddingRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingResponse'
+  /models/info:
+    get:
+      tags:
+        - Model Inference
+      summary: Get Model Information
+      description: Returns information about the deployed AI model.[2]
+      operationId: getModelInfo
+      parameters:
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "2024-05-01-preview"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelInfo'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      properties:
+        code:
+          type: string
+          description: A machine-readable error code, e.g., 'content_filter' or 'parameter_not_supported'.[7]
+        message:
+          type: string
+          description: A human-readable description of the error.
+        param:
+          type: string
+          nullable: true
+          description: The name of the parameter that caused the error, if applicable.
+        type:
+          type: string
+          description: The type of error (e.g., 'invalid_request_error').
+    ChatCompletionRequest:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatRequestMessage'
+          description: The collection of context messages associated with this chat completions request.
+        frequency_penalty:
+          type: number
+          format: float
+          minimum: -2
+          maximum: 2
+          description: A value that influences the probability of generated tokens appearing based on their cumulative frequency in generated text.
+        max_tokens:
+          type: integer
+          format: int32
+          minimum: 0
+          description: The maximum number of tokens to generate.
+        modalities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionsModality'
+          description: The modalities that the model is allowed to use for the chat completions response.
+        model:
+          type: string
+          description: ID of the specific AI model to use, if more than one model is available on the endpoint.
+        presence_penalty:
+          type: number
+          format: float
+          minimum: -2
+          maximum: 2
+          description: A value that influences the probability of generated tokens appearing based on their existing presence in generated text.
+        response_format:
+          $ref: '#/components/schemas/ChatCompletionsResponseFormat'
+        seed:
+          type: integer
+          format: int64
+          description: If specified, the system will make a best effort to sample deterministically.
+        stop:
+          type: array
+          items:
+            type: string
+          description: A collection of textual sequences that will end completions generation.
+        stream:
+          type: boolean
+          description: A value indicating whether chat completions should be streamed for this request.
+        temperature:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: The sampling temperature to use that controls the apparent creativity of generated completions.
+        tool_choice:
+          description: If specified, the model will configure which of the provided tools it can use for the chat completions response.
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionsToolDefinition'
+          description: The available tool definitions that the chat completions request can use.
+        top_p:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: An alternative to sampling with temperature.
+    ChatRequestMessage:
+      oneOf:
+        - $ref: '#/components/schemas/ChatRequestSystemMessage'
+        - $ref: '#/components/schemas/ChatRequestUserMessage'
+        - $ref: '#/components/schemas/ChatRequestAssistantMessage'
+        - $ref: '#/components/schemas/ChatRequestToolMessage'
+    ChatRequestSystemMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [system]
+          description: The chat role associated with this message.
+        content:
+          type: string
+          description: The contents of the system message.
+    ChatRequestUserMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [user]
+          description: The chat role associated with this message.
+        content:
+          description: The contents of the user message, with available input types varying by selected model.
+    ChatRequestAssistantMessage:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum: [assistant]
+          description: The chat role associated with this message.
+        content:
+          type: string
+          description: The content of the message.
+        audio:
+          $ref: '#/components/schemas/ChatRequestAudioReference'
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionsToolCall'
+          description: The tool calls that must be resolved and have their outputs appended to subsequent input messages.
+    ChatRequestToolMessage:
+      type: object
+      required:
+        - role
+        - content
+        - tool_call_id
+      properties:
+        role:
+          type: string
+          enum: [tool]
+          description: The chat role associated with this message.
+        content:
+          type: string
+          description: The content of the message.
+        tool_call_id:
+          type: string
+          description: The ID of the tool call resolved by the provided content.
+    ChatRequestAudioReference:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the audio response.
+    ChatCompletionsModality:
+      type: string
+      enum: [text, audio]
+      description: The modalities that the model is allowed to use for the chat completions response.
+    ChatCompletionsResponseFormat:
+      oneOf:
+        - $ref: '#/components/schemas/ChatCompletionsResponseFormatText'
+        - $ref: '#/components/schemas/ChatCompletionsResponseFormatJsonObject'
+        - $ref: '#/components/schemas/ChatCompletionsResponseFormatJsonSchema'
+    ChatCompletionsResponseFormatText:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [text]
+          description: The response format type to use for chat completions.
+    ChatCompletionsResponseFormatJsonObject:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [json_object]
+          description: The response format type to use for chat completions.
+    ChatCompletionsResponseFormatJsonSchema:
+      type: object
+      required:
+        - type
+        - json_schema
+      properties:
+        type:
+          type: string
+          enum: [json_schema]
+          description: The response format type to use for chat completions.
+        json_schema:
+          $ref: '#/components/schemas/ChatCompletionsResponseFormatJsonSchemaDefinition'
+    ChatCompletionsResponseFormatJsonSchemaDefinition:
+      type: object
+      required:
+        - name
+        - schema
+      properties:
+        name:
+          type: string
+          description: The name of the response format.
+        description:
+          type: string
+          description: A description of the response format.
+        schema:
+          description: The definition of the JSON schema.
+        strict:
+          type: boolean
+          default: false
+          description: Whether to enable strict schema adherence when generating the output.
+    ChatCompletionsToolDefinition:
+      type: object
+      required:
+        - type
+        - function
+      properties:
+        type:
+          type: string
+          enum: [function]
+          description: The type of the tool.
+        function:
+          $ref: '#/components/schemas/FunctionDefinition'
+    ChatCompletionsToolCall:
+      type: object
+      required:
+        - id
+        - type
+        - function
+      properties:
+        id:
+          type: string
+          description: The ID of the tool call.
+        type:
+          type: string
+          enum: [function]
+          description: The type of tool call.
+        function:
+          $ref: '#/components/schemas/FunctionCall'
+    FunctionDefinition:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: The name of the function to be called.
+        description:
+          type: string
+          description: A description of what the function does.
+        parameters:
+          description: The parameters the function accepts, described as a JSON Schema object.
+    FunctionCall:
+      type: object
+      required:
+        - name
+        - arguments
+      properties:
+        name:
+          type: string
+          description: The name of the function to call.
+        arguments:
+          type: string
+          description: The arguments to call the function with, as generated by the model in JSON format.
+    ChatMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [system, user, assistant]
+          description: The role of the message author.
+        content:
+          type: string
+          description: The content of the message.
+    ChatCompletionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: A unique identifier for the chat completion.
+        object:
+          type: string
+          default: "chat.completion"
+          description: The object type, which is always chat.completion.
+        created:
+          type: integer
+          format: unixtime
+          description: The Unix timestamp when the chat completion was created.
+        model:
+          type: string
+          description: The model used for the chat completion.
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionChoice'
+          description: A list of chat completion choices.
+        usage:
+          $ref: '#/components/schemas/CompletionsUsage'
+    ChatCompletionChoice:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: The index of the choice in the list of choices.
+        message:
+          $ref: '#/components/schemas/ChatResponseMessage'
+          description: A chat completion message generated by the model.
+        finish_reason:
+          $ref: '#/components/schemas/CompletionsFinishReason'
+    ChatResponseMessage:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/ChatRole'
+        content:
+          type: string
+          description: The content of the message.
+        audio:
+          $ref: '#/components/schemas/ChatCompletionsAudio'
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionsToolCall'
+          description: The tool calls that must be resolved.
+    ChatRole:
+      type: string
+      enum: [system, developer, user, assistant, tool]
+      description: A description of the intended purpose of a message within a chat completions interaction.
+    ChatCompletionsAudio:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the audio response.
+    CompletionsFinishReason:
+      type: string
+      enum: [stop, length, content_filter, tool_calls]
+      description: Representation of the manner in which a completions response concluded.
+    CompletionsUsage:
+      type: object
+      properties:
+        completion_tokens:
+          type: integer
+          format: int32
+          description: The number of tokens generated across all completions emissions.
+        completion_tokens_details:
+          $ref: '#/components/schemas/CompletionsUsageDetails'
+        prompt_tokens:
+          type: integer
+          format: int32
+          description: The number of tokens in the provided prompts for the completions request.
+        prompt_tokens_details:
+          $ref: '#/components/schemas/PromptUsageDetails'
+        total_tokens:
+          type: integer
+          format: int32
+          description: The total number of tokens processed for the completions request and response.
+    CompletionsUsageDetails:
+      type: object
+      properties:
+        audio_tokens:
+          type: integer
+          format: int32
+          description: The number of tokens corresponding to audio input.
+        total_tokens:
+          type: integer
+          format: int32
+          description: The total number of tokens processed.
+    PromptUsageDetails:
+      type: object
+      properties:
+        audio_tokens:
+          type: integer
+          format: int32
+          description: The number of tokens corresponding to audio input.
+        cached_tokens:
+          type: integer
+          format: int32
+          description: The total number of tokens cached.
+    ExtraParameters:
+      type: string
+      enum: [error, drop, pass-through]
+      description: Controls what happens if extra parameters, undefined by the REST API, are passed in the JSON request payload.
+    Usage:
+      type: object
+      properties:
+        prompt_tokens:
+          type: integer
+        completion_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+    EmbeddingRequest:
+      type: object
+      required:
+        - input
+      properties:
+        input:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+            - type: array
+              items:
+                type: array
+                items:
+                  type: integer
+          description: Input text to embed, encoded as a string, array of strings, or array of token arrays.
+        model:
+          type: string
+          description: ID of the specific AI model to use, if more than one model is available on the endpoint.
+        dimensions:
+          type: integer
+          description: The number of dimensions the resulting output embeddings should have.
+        encoding_format:
+          type: string
+          enum: [float, base64]
+          default: float
+          description: The format to return the embeddings in.
+        input_type:
+          type: string
+          description: The type of the input.
+    EmbeddingResponse:
+      type: object
+      properties:
+        object:
+          type: string
+          default: "list"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddingData'
+        model:
+          type: string
+        usage:
+          $ref: '#/components/schemas/Usage'
+    EmbeddingData:
+      type: object
+      properties:
+        object:
+          type: string
+          default: "embedding"
+        embedding:
+          type: array
+          items:
+            type: number
+            format: float
+        index:
+          type: integer
+    ImageEmbeddingRequest:
+      type: object
+      required:
+        - input
+      properties:
+        input:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageEmbeddingInput'
+          description: An array of image inputs to embed.
+        model:
+          type: string
+          description: ID of the specific AI model to use, if more than one model is available on the endpoint.
+        dimensions:
+          type: integer
+          description: The number of dimensions the resulting output embeddings should have.
+        encoding_format:
+          type: string
+          enum: [float, base64]
+          default: float
+          description: The format to return the embeddings in.
+        input_type:
+          type: string
+          description: The type of the input.
+    ImageEmbeddingInput:
+      type: object
+      required:
+        - image
+      properties:
+        image:
+          type: string
+          description: The image to embed, provided as a base64-encoded string.
+        text:
+          type: string
+          description: Optional input text to embed along with the image for multimodal search.
+    ModelInfo:
+      type: object
+      properties:
+        model_name:
+          type: string
+          description: Name of the AI model.
+        model_type:
+          type: string
+          description: Type of the AI model.
+        model_provider_name:
+          type: string
+          description: Provider of the AI model.
+  securitySchemes:
+    bearer:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes: {}
+      x-tokenInfoFunc: api.middleware.auth.bearer_auth
+      x-scopeValidateFunc: api.middleware.auth.validate_scopes
+    apiKey:
+      type: apiKey
+      name: api-key
+      in: header
+    OAuth2Auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes:
+            https://ai.azure.com/.default: ""
