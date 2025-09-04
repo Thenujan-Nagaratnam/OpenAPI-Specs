@@ -1,13 +1,13 @@
 openapi: 3.1.0
 info:
-  title: Azure OpenAI Service API
+  title: Azure OpenAI API
   description: Azure OpenAI APIs for completions and search
   version: 2025-04-01-preview
 servers:
-  - url: https://{endpoint}/openai
+  - url: https://{resource-name}.openai.azure.com/openai
     variables:
-      endpoint:
-        default: your-resource-name.openai.azure.com
+      resource-name:
+        default: your-resource-name
 security:
   - bearer:
       - api.read
@@ -418,6 +418,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dalleErrorResponse'
+
   /assistants:
     get:
       operationId: List_Assistants
@@ -533,7 +534,7 @@ paths:
     post:
       operationId: Modify_Assistant
       tags:
-        - Assistant
+        - Assistants
       summary: Modifies an assistant.
       parameters:
         - in: path
@@ -1641,7 +1642,7 @@ paths:
     post:
       operationId: updateVectorStoreFileAttributes
       tags:
-        - Vector stores
+        - Vector Stores
       summary: Update attributes on a vector store file.
       parameters:
         - in: path
@@ -1675,7 +1676,7 @@ paths:
     get:
       operationId: retrieveVectorStoreFileContent
       tags:
-        - Vector stores
+        - Vector Stores
       summary: Retrieve the parsed contents of a vector store file.
       parameters:
         - in: path
@@ -1703,7 +1704,7 @@ paths:
     post:
       operationId: searchVectorStore
       tags:
-        - Vector stores
+        - Vector Stores
       summary: Search a vector store for relevant chunks based on a query and file
         attributes filter.
       parameters:
@@ -1924,6 +1925,14 @@ paths:
       operationId: create_realtimeSession
       tags:
         - Realtime
+      parameters:
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            example: 2025-04-01-preview
+            description: api version
       requestBody:
         description: Create an ephemeral API key with the given session configuration.
         required: true
@@ -1953,6 +1962,14 @@ paths:
       operationId: create_transcriptionRealtimeSession
       tags:
         - Realtime
+      parameters:
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            example: 2025-04-01-preview
+            description: api version
       requestBody:
         description: Create an ephemeral API key with the given session configuration.
         required: true
@@ -1985,6 +2002,16 @@ paths:
         or [file search](/docs/guides/tools-file-search) to use your own data
 
         as input for the model's response.
+      tags:
+        - Responses
+      parameters:
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            example: 2025-04-01-preview
+            description: api version
       requestBody:
         required: true
         content:
@@ -2017,7 +2044,16 @@ paths:
     get:
       summary: |
         Retrieves a model response with the given ID.
+      tags:
+        - Responses
       parameters:
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            example: 2025-04-01-preview
+            description: api version
         - in: path
           name: response_id
           required: true
@@ -2059,6 +2095,13 @@ paths:
       summary: |
         Deletes a model response with the given ID.
       parameters:
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            example: 2025-04-01-preview
+            description: api version
         - in: path
           name: response_id
           required: true
@@ -2089,7 +2132,16 @@ paths:
   /responses/{response_id}/input_items:
     get:
       summary: Returns a list of input items for a given response.
+      tags:
+        - Responses
       parameters:
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            example: 2025-04-01-preview
+            description: api version
         - in: path
           name: response_id
           required: true

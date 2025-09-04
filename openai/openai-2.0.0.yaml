@@ -14820,18 +14820,18 @@ paths:
 
         You can atomically and idempotently deactivate up to 10 certificates at a time.
   /organization/certificates/{certificate_id}:
+    parameters:
+      - name: certificate_id
+        in: path
+        description: Unique ID of the certificate to retrieve.
+        required: true
+        schema:
+          type: string
     get:
       summary: Get certificate
       operationId: getCertificate
       tags:
         - Certificates
-      parameters:
-        - name: certificate_id
-          in: path
-          description: Unique ID of the certificate to retrieve.
-          required: true
-          schema:
-            type: string
         - name: include
           in: query
           description: >-

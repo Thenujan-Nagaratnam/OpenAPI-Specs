@@ -1,469 +1,35 @@
 openapi: 3.1.0
 info:
-  title: Azure OpenAI Service API
-  description: Azure OpenAI APIs for completions and search
-  version: 2025-04-01-preview
+  title: Azure AI Foundry API
+  description: |
+    This OpenAPI specification defines the Azure AI Foundry API.
+    It is a stateful, resource-oriented API for creating, managing, and running sophisticated AI agents (also known as Assistants).[9, 10]
+    The API follows the same protocol as the Azure OpenAI Assistants API, allowing for the use of compatible tools and SDKs.[9]
+  version: "2025-04-01-preview"
 servers:
-  - url: https://{endpoint}/openai
+  - url: https://{resource-name}.services.ai.azure.com
     variables:
-      endpoint:
-        default: your-resource-name.openai.azure.com
+      resource-name:
+        default: your-resource-name
 security:
   - bearer:
       - api.read
   - apiKey: []
 paths:
-  /deployments/{deployment-id}/completions:
-    post:
-      summary: Creates a completion for the provided prompt, parameters and chosen model.
-      operationId: Completions_Create
-      parameters:
-        - in: path
-          name: deployment-id
-          required: true
-          schema:
-            type: string
-            example: davinci
-            description: Deployment id of the model which was deployed.
-        - in: query
-          name: api-version
-          required: true
-          schema:
-            type: string
-            example: 2025-04-01-preview
-            description: api version
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/createCompletionRequest"
-            example:
-              prompt: |-
-                Negate the following sentence.The price for bubblegum increased on thursday.
-
-                 Negated Sentence:
-              max_tokens: 50
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/createCompletionResponse"
-              example:
-                model: davinci
-                object: text_completion
-                id: cmpl-4509KAos68kxOqpE2uYGw81j6m7uo
-                created: 1637097562
-                choices:
-                  - index: 0
-                    text: The price for bubblegum decreased on thursday.
-                    logprobs: null
-                    finish_reason: stop
-          headers:
-            apim-request-id:
-              description: Request ID for troubleshooting purposes
-              schema:
-                type: string
-        default:
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/errorResponse"
-          headers:
-            apim-request-id:
-              description: Request ID for troubleshooting purposes
-              schema:
-                type: string
-  /deployments/{deployment-id}/embeddings:
-    post:
-      summary: Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
-      operationId: embeddings_create
-      parameters:
-        - in: path
-          name: deployment-id
-          required: true
-          schema:
-            type: string
-            example: ada-search-index-v1
-          description: The deployment id of the model which was deployed.
-        - in: query
-          name: api-version
-          required: true
-          schema:
-            type: string
-            example: 2025-04-01-preview
-            description: api version
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: true
-              properties:
-                input:
-                  description: |-
-                    Input text to embed, encoded as a string or array of tokens. To embed multiple inputs in a single request, pass an array of strings or array of token arrays. The input must not exceed the max input tokens for the model (8192 tokens for `text-embedding-ada-002`), cannot be an empty string, and any array must be 2048 dimensions or less.
-                  oneOf:
-                    - type: string
-                      default: ""
-                      example: This is a test.
-                      nullable: true
-                    - type: array
-                      minItems: 1
-                      maxItems: 2048
-                      items:
-                        type: string
-                        minLength: 1
-                        example: This is a test.
-                        nullable: false
-                user:
-                  description: A unique identifier representing your end-user, which can help monitoring and detecting abuse.
-                  type: string
-                  nullable: false
-                input_type:
-                  description: input type of embedding search to use
-                  type: string
-                  example: query
-                encoding_format:
-                  description: The format to return the embeddings in. Can be either `float` or `base64`. Defaults to `float`.
-                  type: string
-                  example: base64
-                  nullable: true
-                dimensions:
-                  description: The number of dimensions the resulting output embeddings should have. Only supported in `text-embedding-3` and later models.
-                  type: integer
-                  example: 1
-                  nullable: true
-              required:
-                - input
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  object:
-                    type: string
-                  model:
-                    type: string
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        index:
-                          type: integer
-                        object:
-                          type: string
-                        embedding:
-                          type: array
-                          items:
-                            type: number
-                      required:
-                        - index
-                        - object
-                        - embedding
-                  usage:
-                    type: object
-                    properties:
-                      prompt_tokens:
-                        type: integer
-                      total_tokens:
-                        type: integer
-                    required:
-                      - prompt_tokens
-                      - total_tokens
-                required:
-                  - object
-                  - model
-                  - data
-                  - usage
-      x-ms-examples:
-        Create a embeddings.:
-          $ref: ./examples/embeddings.yaml
-  /deployments/{deployment-id}/chat/completions:
-    post:
-      summary: Creates a completion for the chat message
-      operationId: ChatCompletions_Create
-      parameters:
-        - in: path
-          name: deployment-id
-          required: true
-          schema:
-            type: string
-            description: Deployment id of the model which was deployed.
-        - in: query
-          name: api-version
-          required: true
-          schema:
-            type: string
-            example: 2025-04-01-preview
-            description: api version
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/createChatCompletionRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/createChatCompletionResponse"
-                  - $ref: "#/components/schemas/createChatCompletionStreamResponse"
-          headers:
-            apim-request-id:
-              description: Request ID for troubleshooting purposes
-              schema:
-                type: string
-        default:
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/errorResponse"
-          headers:
-            apim-request-id:
-              description: Request ID for troubleshooting purposes
-              schema:
-                type: string
-      x-ms-examples:
-        Create a chat completion.:
-          $ref: ./examples/chat_completions.yaml
-        Creates a completion based on Azure Search data and system-assigned managed identity.:
-          $ref: ./examples/chat_completions_azure_search_minimum.yaml
-        Creates a completion based on Azure Search image vector data.:
-          $ref: ./examples/chat_completions_azure_search_image_vector.yaml
-        Creates a completion based on Azure Search vector data, previous assistant message and user-assigned managed identity.:
-          $ref: ./examples/chat_completions_azure_search_advanced.yaml
-        Creates a completion for the provided Azure Cosmos DB.:
-          $ref: ./examples/chat_completions_cosmos_db.yaml
-        Creates a completion for the provided Mongo DB.:
-          $ref: ./examples/chat_completions_mongo_db.yaml
-        Creates a completion for the provided Elasticsearch.:
-          $ref: ./examples/chat_completions_elasticsearch.yaml
-        Creates a completion for the provided Pinecone resource.:
-          $ref: ./examples/chat_completions_pinecone.yaml
-  /deployments/{deployment-id}/audio/transcriptions:
-    post:
-      summary: Transcribes audio into the input language.
-      operationId: Transcriptions_Create
-      parameters:
-        - in: path
-          name: deployment-id
-          required: true
-          schema:
-            type: string
-            example: whisper
-            description: Deployment id of the whisper model.
-        - in: query
-          name: api-version
-          required: true
-          schema:
-            type: string
-            example: 2025-04-01-preview
-            description: api version
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/createTranscriptionRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/audioResponse"
-                  - $ref: "#/components/schemas/audioVerboseResponse"
-            text/plain:
-              schema:
-                type: string
-                description: Transcribed text in the output format (when response_format was one of text, vtt or srt).
-      x-ms-examples:
-        Create an audio transcription with json response format.:
-          $ref: ./examples/audio_transcription_object.yaml
-        Create an audio transcription with text response format.:
-          $ref: ./examples/audio_transcription_text.yaml
-  /deployments/{deployment-id}/audio/translations:
-    post:
-      summary: Transcribes and translates input audio into English text.
-      operationId: Translations_Create
-      parameters:
-        - in: path
-          name: deployment-id
-          required: true
-          schema:
-            type: string
-            example: whisper
-            description: Deployment id of the whisper model which was deployed.
-        - in: query
-          name: api-version
-          required: true
-          schema:
-            type: string
-            example: 2025-04-01-preview
-            description: api version
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/createTranslationRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/audioResponse"
-                  - $ref: "#/components/schemas/audioVerboseResponse"
-            text/plain:
-              schema:
-                type: string
-                description: Transcribed text in the output format (when response_format was one of text, vtt or srt).
-      x-ms-examples:
-        Create an audio translation with json response format.:
-          $ref: ./examples/audio_translation_object.yaml
-        Create an audio translation with text response format.:
-          $ref: ./examples/audio_translation_text.yaml
-  /deployments/{deployment-id}/audio/speech:
-    post:
-      summary: Generates audio from the input text.
-      operationId: Speech_Create
-      parameters:
-        - in: path
-          name: deployment-id
-          required: true
-          schema:
-            type: string
-            example: tts-1
-            description: Deployment id of the tts model which was deployed.
-        - in: query
-          name: api-version
-          required: true
-          schema:
-            type: string
-            example: 2025-04-01-preview
-            description: api version
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/createSpeechRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-      x-ms-examples:
-        Create an audio from text with response format mp3.:
-          $ref: ./examples/audio_speech.yaml
-  /deployments/{deployment-id}/images/generations:
-    post:
-      summary: Generates a batch of images from a text caption on a given DALLE or gpt-image-1 model deployment
-      operationId: ImageGenerations_Create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/imageGenerationsRequest"
-      parameters:
-        - in: path
-          name: deployment-id
-          required: true
-          schema:
-            type: string
-            example: gpt-image-1-deployment
-            description: Deployment id of the gpt-image-1 model which was deployed.
-        - in: query
-          name: api-version
-          required: true
-          schema:
-            type: string
-            example: 2025-04-01-preview
-            description: api version
-      responses:
-        "200":
-          description: Ok
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/generateImagesResponse"
-        default:
-          description: An error occurred.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/dalleErrorResponse"
-      x-ms-examples:
-        Create an image.:
-          $ref: ./examples/image_generation.yaml
-  /deployments/{deployment-id}/images/edits:
-    post:
-      summary: Edits an image from a text caption on a given gpt-image-1 model deployment
-      operationId: ImageGenerations_Edit
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/imageEditsRequest'
-      parameters:
-      - in: path
-        name: deployment-id
-        required: true
-        schema:
-          type: string
-          example: gpt-image-1-deployment
-          description: Deployment id of the gpt-image-1 model which was deployed.
-      - in: query
-        name: api-version
-        required: true
-        schema:
-          type: string
-          example: 2025-04-01-preview
-          description: api version
-      responses:
-        '200':
-          description: Ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/generateImagesResponse'
-        default:
-          description: An error occurred.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dalleErrorResponse'
-      x-ms-examples:
-        Create an image.:
-          $ref: ./examples/image_edits.json
-  /assistants:
+  /api/projects/{project-name}/assistants:
     get:
       operationId: List_Assistants
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Returns a list of assistants.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - name: limit
           in: query
           description: &pagination_limit_param_description |
@@ -507,8 +73,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -516,21 +82,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/listAssistantsResponse"
-      x-ms-examples:
-        Create an image.:
-          $ref: ./examples/list_assistants.yaml
     post:
       operationId: Create_Assistant
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Create an assistant with a model and instructions.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: query
           name: api-version
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       requestBody:
         required: true
@@ -545,17 +115,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/assistantObject"
-      x-ms-examples:
-        Create an assistant.:
-          $ref: ./examples/create_assistant.yaml
-
-  /assistants/{assistant_id}:
+  /api/projects/{project-name}/assistants/{assistant_id}:
     get:
       operationId: Get_Assistant
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieves an assistant.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: assistant_id
           required: true
@@ -567,8 +140,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -576,15 +149,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/assistantObject"
-      x-ms-examples:
-        Create an assistant.:
-          $ref: ./examples/retrieve_assistant.yaml
     post:
       operationId: Modify_Assistant
       tags:
-        - Assistant
+        - AI Agents
+          - Assistants
       summary: Modifies an assistant.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: assistant_id
           required: true
@@ -596,8 +173,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -611,15 +188,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/assistantObject"
-      x-ms-examples:
-        Create an assistant.:
-          $ref: ./examples/modify_assistant.yaml
     delete:
       operationId: Delete_Assistant
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Delete an assistant.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: assistant_id
           required: true
@@ -631,8 +212,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -640,23 +221,213 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/deleteAssistantResponse"
-      x-ms-examples:
-        Create an assistant.:
-          $ref: ./examples/delete_assistant.yaml
-  /threads:
-    post:
-      operationId: Create_Thread
+  /api/projects/{project-name}/files:
+    get:
+      operationId: List_Files
       tags:
-        - Assistants
-      summary: Create a thread.
+        - AI Agents
+          - Files
+      summary: Gets a list of previously uploaded files.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: purpose
+          in: query
+          description: The purpose of the file.
+          required: false
+          schema:
+            $ref: "#/components/schemas/FilePurpose"
         - in: query
           name: api-version
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
+      responses:
+        "200":
+          description: The requested list of files.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileListResponse"
+    post:
+      operationId: Upload_File
+      tags:
+        - AI Agents
+          - Files
+      summary: Uploads a file for use by other operations.
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            default: "2025-05-15-preview"
+          description: api version
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file data, in bytes.
+                purpose:
+                  $ref: "#/components/schemas/FilePurpose"
+                  description: The intended purpose of the uploaded file. Use assistants for Agents and Message files, vision for Agents image file inputs, batch for Batch API, and fine-tune for Fine-tuning.
+                filename:
+                  type: string
+                  description: The name of the file.
+              required:
+                - file
+                - purpose
+      responses:
+        "200":
+          description: A representation of the uploaded file.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileInfo"
+  /api/projects/{project-name}/files/{fileId}:
+    get:
+      operationId: Get_File
+      tags:
+        - AI Agents
+          - Files
+      summary: Returns information about a specific file. Does not retrieve file content.
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          description: The ID of the file to retrieve.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            default: "2025-05-15-preview"
+          description: api version
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileInfo"
+    delete:
+      operationId: Delete_File
+      tags:
+        - AI Agents
+          - Files
+      summary: Delete a previously uploaded file.
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          description: The ID of the file to delete.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            default: "2025-05-15-preview"
+          description: api version
+      responses:
+        "200":
+          description: Status of the deletion operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileDeletionStatus"
+  /api/projects/{project-name}/files/{fileId}/content:
+    get:
+      operationId: Get_File_Content
+      tags:
+        - AI Agents
+          - Files
+      summary: Retrieves the raw content of a specific file.
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          description: The ID of the file to retrieve.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            default: "2025-05-15-preview"
+          description: api version
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+  /api/projects/{project-name}/threads:
+    post:
+      operationId: Create_Thread
+      tags:
+        - AI Agents
+          - Assistants
+      summary: Create a thread.
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -670,16 +441,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/threadObject"
-      x-ms-examples:
-        Create a thread.:
-          $ref: ./examples/create_thread.yaml
-  /threads/{thread_id}:
+    get:
+      summary: Gets a list of threads that were previously created.
+      operationId: listThreads
+      tags:
+        - AI Agents
+          - Assistants
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "2025-05-15-preview"
+          description: api version
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          description: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.
+        - name: order
+          in: query
+          description: |
+            Sort order by the `created_at` timestamp of the objects. `asc` for ascending order and `desc` for descending order.
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+            x-ms-enum:
+              name: ListMessagesOrder
+              modelAsString: true
+              values:
+                - value: asc
+                  description: Order results in ascending order
+                - value: desc
+                  description: Order results in descending order
+        - name: after
+          in: query
+          required: false
+          schema:
+            type: string
+          description: A cursor for use in pagination. after is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with obj_foo, your subsequent call can include after=obj_foo in order to fetch the next page of the list.
+        - name: before
+          in: query
+          required: false
+          schema:
+            type: string
+          description: A cursor for use in pagination. before is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with obj_foo, your subsequent call can include before=obj_foo in order to fetch the previous page of the list.
+      responses:
+        "200":
+          description: The requested list of threads.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/listThreadsResponse"
+  /api/projects/{project-name}/threads/{thread_id}:
     get:
       operationId: Get_Thread
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieves a thread.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -691,8 +531,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -700,15 +540,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/threadObject"
-      x-ms-examples:
-        Create a thread.:
-          $ref: ./examples/retrieve_thread.yaml
     post:
       operationId: Modify_Thread
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Modifies a thread.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -720,8 +564,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -735,15 +579,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/threadObject"
-      x-ms-examples:
-        Modify a thread.:
-          $ref: ./examples/modify_thread.yaml
     delete:
       operationId: Delete_Thread
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Delete a thread.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -755,8 +603,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -764,16 +612,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/deleteThreadResponse"
-      x-ms-examples:
-        Delete a thread.:
-          $ref: ./examples/delete_thread.yaml
-  /threads/{thread_id}/messages:
+  /api/projects/{project-name}/threads/{thread_id}/messages:
     get:
       operationId: List_Messages
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Returns a list of messages for a given thread.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -828,8 +680,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -837,15 +689,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/listMessagesResponse"
-      x-ms-examples:
-        List messages.:
-          $ref: ./examples/list_messages.yaml
     post:
       operationId: Create_Message
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Create a message.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -857,8 +713,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -872,16 +728,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/messageObject"
-      x-ms-examples:
-        Create a message.:
-          $ref: ./examples/create_message.yaml
-  /threads/{thread_id}/messages/{message_id}:
+  /api/projects/{project-name}/threads/{thread_id}/messages/{message_id}:
     get:
       operationId: Get_Message
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieve a message.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -899,8 +759,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -908,15 +768,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/messageObject"
-      x-ms-examples:
-        Retrieve a message.:
-          $ref: ./examples/get_message.yaml
     post:
       operationId: Modify_Message
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Modifies a message.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -934,8 +798,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -949,23 +813,67 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/messageObject"
-      x-ms-examples:
-        Modify a message.:
-          $ref: ./examples/modify_message.yaml
-  /threads/runs:
-    post:
-      operationId: Create_Thread_And_Run
+    delete:
+      operationId: Delete_Message
       tags:
-        - Assistants
-      summary: Create a thread and run it in one request.
+        - AI Agents
+          - Assistants
+      summary: Deletes an existing message on an existing thread.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: thread_id
+          required: true
+          schema:
+            type: string
+          description: Identifier of the thread.
+        - in: path
+          name: message_id
+          required: true
+          schema:
+            type: string
+          description: Identifier of the message.
         - in: query
           name: api-version
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+            minLength: 1
+          description: The API version to use for this operation.
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageDeletionStatus"
+  /api/projects/{project-name}/threads/runs:
+    post:
+      operationId: Create_Thread_And_Run
+      tags:
+        - AI Agents
+          - Assistants
+      summary: Create a thread and run it in one request.
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: api-version
+          required: true
+          schema:
+            type: string
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -979,16 +887,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/runObject"
-      x-ms-examples:
-        Create a thread and run it.:
-          $ref: ./examples/create_thread_and_run.yaml
-  /threads/{thread_id}/runs:
+  /api/projects/{project-name}/threads/{thread_id}/runs:
     get:
       operationId: List_Runs
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Returns a list of runs belonging to a thread.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - name: thread_id
           in: path
           required: true
@@ -1034,8 +946,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -1043,15 +955,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/listRunsResponse"
-      x-ms-examples:
-        List runs.:
-          $ref: ./examples/list_runs.yaml
     post:
       operationId: Create_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Create a run.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -1082,8 +998,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -1097,16 +1013,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/runObject"
-      x-ms-examples:
-        Create a run.:
-          $ref: ./examples/create_run.yaml
-  /threads/{thread_id}/runs/{run_id}:
+  /api/projects/{project-name}/threads/{thread_id}/runs/{run_id}:
     get:
       operationId: Get_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieves a run.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -1124,8 +1044,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       responses:
         "200":
           description: OK
@@ -1133,15 +1053,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/runObject"
-      x-ms-examples:
-        Retrieve a run.:
-          $ref: ./examples/get_run.yaml
     post:
       operationId: Modify_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Modifies a run.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -1159,8 +1083,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -1174,17 +1098,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/runObject"
-      x-ms-examples:
-        Modify a run.:
-          $ref: ./examples/modify_run.yaml
-  /threads/{thread_id}/runs/{run_id}/submit_tool_outputs:
+  /api/projects/{project-name}/threads/{thread_id}/runs/{run_id}/submit_tool_outputs:
     post:
       operationId: Submit_Tool_Outputs_To_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: |
         When a run has the `status: "requires_action"` and `required_action.type` is `submit_tool_outputs`, this endpoint can be used to submit the outputs from the tool calls once they're all completed. All outputs must be submitted in a single request.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -1202,8 +1130,8 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
-            description: api version
+            default: "2025-05-15-preview"
+          description: api version
       requestBody:
         required: true
         content:
@@ -1217,16 +1145,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/runObject"
-      x-ms-examples:
-        Submit tool outputs to a run.:
-          $ref: ./examples/submit_tool_outputs_to_run.yaml
-  /threads/{thread_id}/runs/{run_id}/cancel:
+  /api/projects/{project-name}/threads/{thread_id}/runs/{run_id}/cancel:
     post:
       operationId: Cancel_Run
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Cancels a run that is `in_progress`.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -1244,7 +1176,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1253,16 +1185,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/runObject"
-      x-ms-examples:
-        Cancel a run.:
-          $ref: ./examples/cancel_run.yaml
-  /threads/{thread_id}/runs/{run_id}/steps:
+  /api/projects/{project-name}/threads/{thread_id}/runs/{run_id}/steps:
     get:
       operationId: List_Run_Steps
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Returns a list of run steps belonging to a run.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - name: thread_id
           in: path
           required: true
@@ -1314,7 +1250,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
         - name: include[]
           in: query
@@ -1342,16 +1278,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/listRunStepsResponse"
-      x-ms-examples:
-        List run steps.:
-          $ref: ./examples/list_run_steps.yaml
-  /threads/{thread_id}/runs/{run_id}/steps/{step_id}:
+  /api/projects/{project-name}/threads/{thread_id}/runs/{run_id}/steps/{step_id}:
     get:
       operationId: Get_Run_Step
       tags:
-        - Assistants
+        - AI Agents
+          - Assistants
       summary: Retrieves a run step.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: thread_id
           required: true
@@ -1394,7 +1334,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1403,16 +1343,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/runStepObject"
-      x-ms-examples:
-        Retrieve a run step.:
-          $ref: ./examples/get_run_step.yaml
-  /vector_stores:
+  /api/projects/{project-name}/vector_stores:
     get:
       operationId: List_Vector_Stores
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Returns a list of vector stores.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - name: limit
           in: query
           description: *pagination_limit_param_description
@@ -1448,7 +1392,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1457,13 +1401,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/listVectorStoresResponse"
-      x-ms-examples:
-        List vector stores.:
-          $ref: ./examples/list_vector_stores.yaml
     post:
       operationId: Create_Vector_Store
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Create a vector store.
       requestBody:
         required: true
@@ -1472,12 +1414,18 @@ paths:
             schema:
               $ref: "#/components/schemas/createVectorStoreRequest"
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: query
           name: api-version
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1486,17 +1434,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/vectorStoreObject"
-      x-ms-examples:
-        Create a vector store.:
-          $ref: ./examples/create_vector_store.yaml
-
-  /vector_stores/{vector_store_id}:
+  /api/projects/{project-name}/vector_stores/{vector_store_id}:
     get:
       operationId: Get_Vector_Store
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Retrieves a vector store.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1508,7 +1459,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1517,15 +1468,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/vectorStoreObject"
-      x-ms-examples:
-        Retrieve a vector store.:
-          $ref: ./examples/retrieve_vector_store.yaml
     post:
       operationId: Modify_Vector_Store
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Modifies a vector store.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1537,7 +1492,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       requestBody:
         required: true
@@ -1552,16 +1507,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/vectorStoreObject"
-      x-ms-examples:
-        Modify a vector store.:
-          $ref: ./examples/modify_vector_store.yaml
-
     delete:
       operationId: Delete_Vector_Store
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Delete a vector store.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1573,7 +1531,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1582,17 +1540,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/deleteVectorStoreResponse"
-      x-ms-examples:
-        Delete a vector store.:
-          $ref: ./examples/delete_vector_store.yaml
-
-  /vector_stores/{vector_store_id}/files:
+  /api/projects/{project-name}/vector_stores/{vector_store_id}/files:
     get:
       operationId: List_Vector_Store_Files
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Returns a list of vector store files.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - name: vector_store_id
           in: path
           description: The ID of the vector store that the files belong to.
@@ -1648,7 +1609,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1657,15 +1618,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/listVectorStoreFilesResponse"
-      x-ms-examples:
-        List vector store files.:
-          $ref: ./examples/list_vector_store_files.yaml
     post:
       operationId: Create_Vector_Store_File
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Create a vector store file by attaching a [File](/docs/api-reference/files) to a [vector store](/docs/api-reference/vector-stores/object).
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1679,7 +1644,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       requestBody:
         required: true
@@ -1694,17 +1659,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/vectorStoreFileObject"
-      x-ms-examples:
-        Create a vector store file.:
-          $ref: ./examples/create_vector_store_file.yaml
-
-  /vector_stores/{vector_store_id}/files/{file_id}:
+  /api/projects/{project-name}/vector_stores/{vector_store_id}/files/{file_id}:
     get:
       operationId: Get_Vector_Store_File
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Retrieves a vector store file.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1724,7 +1692,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1733,15 +1701,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/vectorStoreFileObject"
-      x-ms-examples:
-        Retrieve a vector store file.:
-          $ref: ./examples/retrieve_vector_store_file.yaml
     delete:
       operationId: Delete_Vector_Store_File
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Delete a vector store file. This will remove the file from the vector store but the file itself will not be deleted. To delete the file, use the [delete file](/docs/api-reference/files/delete) endpoint.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1759,7 +1731,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1768,106 +1740,112 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/deleteVectorStoreFileResponse"
-      x-ms-examples:
-        Delete a vector store file.:
-          $ref: ./examples/delete_vector_store_file.yaml
-    post:
-      operationId: updateVectorStoreFileAttributes
-      tags:
-        - Vector stores
-      summary: Update attributes on a vector store file.
-      parameters:
-        - in: path
-          name: vector_store_id
-          required: true
-          schema:
-            type: string
-            example: vs_abc123
-          description: The ID of the vector store the file belongs to.
-        - in: path
-          name: file_id
-          required: true
-          schema:
-            type: string
-            example: file-abc123
-          description: The ID of the file to update attributes.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateVectorStoreFileAttributesRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/vectorStoreFileObject"
-  /vector_stores/{vector_store_id}/files/{file_id}/content:
-    get:
-      operationId: retrieveVectorStoreFileContent
-      tags:
-        - Vector stores
-      summary: Retrieve the parsed contents of a vector store file.
-      parameters:
-        - in: path
-          name: vector_store_id
-          required: true
-          schema:
-            type: string
-            example: vs_abc123
-          description: The ID of the vector store.
-        - in: path
-          name: file_id
-          required: true
-          schema:
-            type: string
-            example: file-abc123
-          description: The ID of the file within the vector store.
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/VectorStoreFileContentResponse"
-  /vector_stores/{vector_store_id}/search:
-    post:
-      operationId: searchVectorStore
-      tags:
-        - Vector stores
-      summary: Search a vector store for relevant chunks based on a query and file
-        attributes filter.
-      parameters:
-        - in: path
-          name: vector_store_id
-          required: true
-          schema:
-            type: string
-            example: vs_abc123
-          description: The ID of the vector store to search.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/VectorStoreSearchRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/VectorStoreSearchResultsPage"
-
-  /vector_stores/{vector_store_id}/file_batches:
+    # post:
+    #   operationId: updateVectorStoreFileAttributes
+    #   tags:
+    #     - AI Agents
+    #       - Vector Stores
+    #   summary: Update attributes on a vector store file.
+    #   parameters:
+    #     - in: path
+    #       name: vector_store_id
+    #       required: true
+    #       schema:
+    #         type: string
+    #         example: vs_abc123
+    #       description: The ID of the vector store the file belongs to.
+    #     - in: path
+    #       name: file_id
+    #       required: true
+    #       schema:
+    #         type: string
+    #         example: file-abc123
+    #       description: The ID of the file to update attributes.
+    #   requestBody:
+    #     required: true
+    #     content:
+    #       application/json:
+    #         schema:
+    #           $ref: "#/components/schemas/UpdateVectorStoreFileAttributesRequest"
+    #   responses:
+    #     "200":
+    #       description: OK
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: "#/components/schemas/vectorStoreFileObject"
+  # /vector_stores/{vector_store_id}/files/{file_id}/content:
+  #   get:
+  #     operationId: retrieveVectorStoreFileContent
+  #     tags:
+  #       - AI Agents
+  #         - Vector Stores
+  #     summary: Retrieve the parsed contents of a vector store file.
+  #     parameters:
+  #       - in: path
+  #         name: vector_store_id
+  #         required: true
+  #         schema:
+  #           type: string
+  #           example: vs_abc123
+  #         description: The ID of the vector store.
+  #       - in: path
+  #         name: file_id
+  #         required: true
+  #         schema:
+  #           type: string
+  #           example: file-abc123
+  #         description: The ID of the file within the vector store.
+  #     responses:
+  #       "200":
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/VectorStoreFileContentResponse"
+  # /vector_stores/{vector_store_id}/search:
+  #   post:
+  #     operationId: searchVectorStore
+  #     tags:
+  #       - AI Agents
+  #         - Vector Stores
+  #     summary: Search a vector store for relevant chunks based on a query and file
+  #       attributes filter.
+  #     parameters:
+  #       - in: path
+  #         name: vector_store_id
+  #         required: true
+  #         schema:
+  #           type: string
+  #           example: vs_abc123
+  #         description: The ID of the vector store to search.
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: "#/components/schemas/VectorStoreSearchRequest"
+  #     responses:
+  #       "200":
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/VectorStoreSearchResultsPage"
+  /api/projects/{project-name}/vector_stores/{vector_store_id}/file_batches:
     post:
       operationId: Create_Vector_Store_File_Batch
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Create a vector store file batch.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1881,7 +1859,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       requestBody:
         required: true
@@ -1896,17 +1874,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/vectorStoreFileBatchObject"
-      x-ms-examples:
-        Create a vector store file batch.:
-          $ref: ./examples/create_vector_store_file_batch.yaml
-
-  /vector_stores/{vector_store_id}/file_batches/{batch_id}:
+  /api/projects/{project-name}/vector_stores/{vector_store_id}/file_batches/{batch_id}:
     get:
       operationId: Get_Vector_Store_File_Batch
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Retrieves a vector store file batch.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1926,7 +1907,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1935,17 +1916,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/vectorStoreFileBatchObject"
-      x-ms-examples:
-        Retrieve a vector store file batch.:
-          $ref: ./examples/retrieve_vector_store_file_batch.yaml
-
-  /vector_stores/{vector_store_id}/file_batches/{batch_id}/cancel:
+  /api/projects/{project-name}/vector_stores/{vector_store_id}/file_batches/{batch_id}/cancel:
     post:
       operationId: Cancel_Vector_Store_File_Batch
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Cancel a vector store file batch. This attempts to cancel the processing of files in this batch as soon as possible.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - in: path
           name: vector_store_id
           required: true
@@ -1963,7 +1947,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -1972,17 +1956,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/vectorStoreFileBatchObject"
-      x-ms-examples:
-        Cancel a vector store file batch.:
-          $ref: ./examples/cancel_vector_store_file_batch.yaml
-
-  /vector_stores/{vector_store_id}/file_batches/{batch_id}/files:
+  /api/projects/{project-name}/vector_stores/{vector_store_id}/file_batches/{batch_id}/files:
     get:
       operationId: List_Vector_Store_File_Batch_Files
       tags:
-        - Vector Stores
+        - AI Agents
+          - Vector Stores
       summary: Returns a list of vector store files in a batch.
       parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
         - name: vector_store_id
           in: path
           description: The ID of the vector store that the files belong to.
@@ -2044,7 +2031,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 2025-04-01-preview
+            default: "2025-05-15-preview"
           description: api version
       responses:
         "200":
@@ -2053,241 +2040,985 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/listVectorStoreFilesResponse"
-      x-ms-examples:
-        List vector store files in a batch.:
-          $ref: ./examples/list_vector_store_file_batch.yaml
-  /realtimeapi/sessions:
+
+  ### Model Inference
+  /models/chat/completions:
     post:
-      summary: >
-        Create an ephemeral API token for use in client-side applications with
-        the Realtime API. Can be configured with the same session parameters as the
-        `session.update` client event.
-
-        It responds with a session object, plus a `client_secret` key which
-        contains a usable ephemeral API token that can be used to authenticate browser
-        clients for the Realtime API.
-      operationId: create_realtimeSession
       tags:
-        - Realtime
-      requestBody:
-        description: Create an ephemeral API key with the given session configuration.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RealtimeSessionCreateRequest"
-      responses:
-        "200":
-          description: Session created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RealtimeSessionCreateResponse"
-      x-ms-examples:
-        Create an ephemeral token for a Realtime API session.:
-          $ref: ./examples/create_realtime_session.yaml
-  /realtimeapi/transcription_sessions:
-    post:
-      summary: >
-        Create an ephemeral API token for use in client-side applications with
-        the Realtime API specifically for realtime transcriptions. 
-
-        Can be configured with the same session parameters as the
-        `transcription_session.update` client event.
-
-        It responds with a session object, plus a `client_secret` key which
-        contains a usable ephemeral API token that can be used to authenticate browser
-        clients for the Realtime API.
-      operationId: create_transcriptionRealtimeSession
-      tags:
-        - Realtime
-      requestBody:
-        description: Create an ephemeral API key with the given session configuration.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RealtimeTranscriptionSessionCreateRequest"
-      responses:
-        "200":
-          description: Session created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RealtimeTranscriptionSessionCreateResponse"
-      x-ms-examples:
-        Create an ephemeral token for a Realtime API transcription session.:
-          $ref: ./examples/create_realtime_transcription_session.yaml
-  /responses:
-    post:
-      summary: >
-        Creates a model response. Provide [text](/docs/guides/text) or
-
-        [image](/docs/guides/images) inputs to generate
-        [text](/docs/guides/text)
-
-        or [JSON](/docs/guides/structured-outputs) outputs. Have the model call
-
-        your own [custom code](/docs/guides/function-calling) or use built-in
-
-        [tools](/docs/guides/tools) like [web
-        search](/docs/guides/tools-web-search)
-
-        or [file search](/docs/guides/tools-file-search) to use your own data
-
-        as input for the model's response.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/createResponse"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/response"
-            text/event-stream:
-              schema:
-                $ref: "#/components/schemas/responseStreamEvent"
-        default:
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/errorResponse"
-          headers:
-            apim-request-id:
-              description: Request ID for troubleshooting purposes
-              schema:
-                type: string
-
-  /responses/{response_id}:
-    get:
-      summary: |
-        Retrieves a model response with the given ID.
+        - Model Inference
+      summary: Create Chat Completion
+      description: Creates a model response for the given chat conversation.[2]
+      operationId: createChatCompletion
       parameters:
-        - in: path
-          name: response_id
-          required: true
-          schema:
-            type: string
-            example: resp_677efb5139a88190b512bc3fef8e535d
-          description: The ID of the response to retrieve.
-        - in: query
-          name: include
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/includable"
-          description: |
-            Additional fields to include in the response. See the `include`
-            parameter for Response creation above for more information.
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/response"
-        default:
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/errorResponse"
-          headers:
-            apim-request-id:
-              description: Request ID for troubleshooting purposes
-              schema:
-                type: string
-    delete:
-      operationId: deleteResponse
-      tags:
-        - Responses
-      summary: |
-        Deletes a model response with the given ID.
-      parameters:
-        - in: path
-          name: response_id
-          required: true
-          schema:
-            type: string
-            example: resp_677efb5139a88190b512bc3fef8e535d
-          description: The ID of the response to delete.
-      responses:
-        "200":
-          description: OK
-        "404":
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/error"
-        default:
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/errorResponse"
-          headers:
-            apim-request-id:
-              description: Request ID for troubleshooting purposes
-              schema:
-                type: string
-  /responses/{response_id}/input_items:
-    get:
-      summary: Returns a list of input items for a given response.
-      parameters:
-        - in: path
-          name: response_id
-          required: true
-          schema:
-            type: string
-          description: The ID of the response to retrieve input items for.
-        - name: limit
+        - name: api-version
           in: query
-          description: >
-            A limit on the number of objects to be returned. Limit can range
-            between
-
-            1 and 100, and the default is 20.
+          required: true
+          schema:
+            type: string
+            default: "2024-05-01-preview"
+        - name: extra-parameters
+          in: header
           required: false
           schema:
-            type: integer
-            default: 20
-        - in: query
-          name: order
-          schema:
-            type: string
-            enum:
-              - asc
-              - desc
-          description: |
-            The order to return the input items in. Default is `asc`.
-            - `asc`: Return the input items in ascending order.
-            - `desc`: Return the input items in descending order.
-        - in: query
-          name: after
-          schema:
-            type: string
-          description: |
-            An item ID to list items after, used in pagination.
-        - in: query
-          name: before
-          schema:
-            type: string
-          description: |
-            An item ID to list items before, used in pagination.
+            $ref: '#/components/schemas/ExtraParameters'
+          description: Controls what happens if extra parameters are passed in the request payload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/responseItemList"
+                $ref: '#/components/schemas/ChatCompletionResponse'
+  /models/embeddings:
+    post:
+      tags:
+        - Model Inference
+      summary: Create Text Embeddings
+      description: Creates an embedding vector representing the input text.[2]
+      operationId: createTextEmbedding
+      parameters:
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "2024-05-01-preview"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmbeddingRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingResponse'
+  /models/images/embeddings:
+    post:
+      tags:
+        - Model Inference
+      summary: Create Image Embeddings
+      description: Creates an embedding vector representing the input text and image.[2]
+      operationId: createImageEmbedding
+      parameters:
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "2024-05-01-preview"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageEmbeddingRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingResponse'
+  /models/info:
+    get:
+      tags:
+        - Model Inference
+      summary: Get Model Information
+      description: Returns information about the deployed AI model.[2]
+      operationId: getModelInfo
+      parameters:
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "2024-05-01-preview"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelInfo'
+
+  ### Projects
+  /api/projects/{project-name}/connections/{name}:
+    get:
+      tags:
+        - AI Projects
+          - Connections
+      summary: Get Connection
+      description: Get a connection by name, without populating connection credentials
+      operationId: getConnection
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The friendly name of the connection, provided by the user.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connection'
+  /api/projects/{project-name}/connections/{name}/getConnectionWithCredentials:
+    post:
+      tags:
+        - AI Projects
+          - Connections
+      summary: Get Connection With Credentials
+      description: Get a connection by name, with its connection credentials
+      operationId: getConnectionWithCredentials
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The friendly name of the connection, provided by the user.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connection'
+  /api/projects/{project-name}/connections:
+    get:
+      tags:
+        - AI Projects
+          - Connections
+      summary: List Connections
+      description: List all connections in the project without including credentials
+      operationId: listConnections
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: connectionType
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ConnectionType'
+          description: Filter connections by this specific type.
+        - name: defaultConnection
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter to list only default connections.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedConnection'
+  /api/projects/{project-name}/datasets/{name}/versions/{version}:
+    patch:
+      tags:
+        - AI Projects
+          - Datasets
+      summary: Create or Update Dataset Version
+      description: Creates a new or updates an existing dataset version with the given version ID
+      operationId: createOrUpdateDatasetVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/DatasetVersion'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetVersion'
+        '201':
+          description: The request has succeeded and a new resource has been created.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetVersion'
+    delete:
+      tags:
+        - AI Projects
+          - Datasets
+      summary: Delete Dataset Version
+      description: Deletes the specified version of the dataset. Returns 204 No Content if successful or if the dataset version does not exist
+      operationId: deleteDatasetVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '204':
+          description: There is no content to send for this request, but the headers may be useful.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+    get:
+      tags:
+        - AI Projects
+          - Datasets
+      summary: Get Dataset Version
+      description: Retrieves the specified version of the dataset
+      operationId: getDatasetVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetVersion'
+  /api/projects/{project-name}/datasets/{name}/versions/{version}/getCredentials:
+    post:
+      tags:
+        - AI Projects
+          - Datasets
+      summary: Get Dataset Version Credentials
+      description: Retrieves the credentials for the specified dataset version
+      operationId: getDatasetCredentials
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetCredentials'
+  /api/projects/{project-name}/datasets/{name}/versions:
+    get:
+      tags:
+        - AI Projects
+          - Datasets
+      summary: List Dataset Versions
+      description: Retrieves all versions of the specified dataset
+      operationId: listDatasetVersions
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDatasetVersion'
+  /api/projects/{project-name}/datasets/{name}/versions/latest:
+    get:
+      tags:
+        - AI Projects
+          - Datasets
+      summary: List Latest Dataset Versions
+      description: Retrieves the latest versions of datasets
+      operationId: listLatestDatasets
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDatasetVersion'
+  /api/projects/{project-name}/datasets/{name}/versions/{version}/startPendingUpload:
+    post:
+      tags:
+        - AI Projects
+          - Datasets
+      summary: Start Pending Upload Version
+      description: Starts the pending upload process for the specified dataset version
+      operationId: startPendingUploadVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the dataset.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the dataset version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingUploadCredential'
+  /api/projects/{project-name}/deployments/{name}:
+    get:
+      tags:
+        - AI Projects
+          - Deployments
+      summary: Get Deployment
+      description: Get a deployment by name
+      operationId: getDeployment
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the deployment.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+  /api/projects/{project-name}/deployments:
+    get:
+      tags:
+        - AI Projects
+          - Deployments
+      summary: List Deployments
+      description: List all deployments in the project
+      operationId: listDeployments
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDeployment'
+  /api/projects/{project-name}/indexes/{name}/versions/{version}:
+    patch:
+      tags:
+        - AI Projects
+          - Indexes
+      summary: Create or Update Index Version
+      description: Creates a new or updates an existing index version with the given version ID
+      operationId: createOrUpdateIndexVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the index version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/IndexVersion'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexVersion'
+        '201':
+          description: The request has succeeded and a new resource has been created.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexVersion'
+    delete:
+      tags:
+        - AI Projects
+          - Indexes
+      summary: Delete Index Version
+      description: Deletes the specified version of the index. Returns 204 No Content if successful or if the index version does not exist
+      operationId: deleteIndexVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the index version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '204':
+          description: There is no content to send for this request, but the headers may be useful.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+    get:
+      tags:
+        - AI Projects
+          - Indexes
+      summary: Get Index Version
+      description: Retrieves the specified version of the index
+      operationId: getIndexVersion
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The version ID of the index version.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexVersion'
+  /api/projects/{project-name}/indexes/{name}/versions:
+    get:
+      tags:
+        - AI Projects
+          - Indexes
+      summary: List Index Versions
+      description: Retrieves all versions of the specified index
+      operationId: listIndexVersions
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedIndexVersion'
+  /api/projects/{project-name}/indexes/{name}/versions/latest:
+    get:
+      tags:
+        - AI Projects
+          - Indexes
+      summary: List Latest Index Versions
+      description: Retrieves the latest versions of indexes
+      operationId: listLatestIndexes
+      parameters:
+        - name: project-name
+          in: path
+          description: The name of the project.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the index.
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            default: "2025-05-15-preview"
+          description: The API version to use for this operation.
+        - name: x-ms-client-request-id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: An opaque, globally-unique, client-generated string identifier for the request.
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-ms-client-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedIndexVersion'
 
 components:
   schemas:
@@ -2360,6 +3091,25 @@ components:
         revised_prompt:
           type: string
           description: The prompt that was used to generate the image, if there was any revision to the prompt.
+    MessageDeletionStatus:
+      type: object
+      description: The status of a thread message deletion operation.
+      properties:
+        id:
+          type: string
+          description: The ID of the resource specified for deletion.
+        object:
+          type: string
+          enum:
+            - thread.message.deleted
+          description: The object type, which is always 'thread.message.deleted'.
+        deleted:
+          type: boolean
+          description: A value indicating whether deletion was successful.
+      required:
+        - id
+        - object
+        - deleted
     contentFilterCompletionTextSpan:
       description: Describes a span within generated completion text.  Offset 0 is the first UTF32 code point of the completion text.
       type: object
@@ -2637,7 +3387,7 @@ components:
       type: object
       properties:
         prompt:
-          description: &completions_prompt_description |
+          description: |
             The prompt(s) to generate completions for, encoded as a string, array of strings, array of tokens, or array of token arrays.
 
             Note that <|endoftext|> is the document separator that the model sees during training, so if a prompt is not specified the model will generate as if from the beginning of a new document.
@@ -2658,7 +3408,7 @@ components:
           minimum: 0
           maximum: 20
           nullable: true
-          description: &completions_best_of_description |
+          description: |
             Generates `best_of` completions server-side and returns the "best" (the one with the highest log probability per token). Results cannot be streamed.
 
             When used with `n`, `best_of` controls the number of candidate completions and `n` specifies how many to return – `best_of` must be greater than `n`.
@@ -2668,7 +3418,7 @@ components:
           type: boolean
           default: false
           nullable: true
-          description: &completions_echo_description >
+          description: >
             Echo back the prompt in addition to the completion
         frequency_penalty:
           type: number
@@ -2679,26 +3429,26 @@ components:
           description: &completions_frequency_penalty_description |
             Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
 
-        logit_bias: &completions_logit_bias
+        logit_bias:
           type: object
           x-oaiTypeLabel: map
           default: null
           nullable: true
           additionalProperties:
             type: integer
-          description: &completions_logit_bias_description |
+          description: |
             Modify the likelihood of specified tokens appearing in the completion.
 
             Accepts a JSON object that maps tokens (specified by their token ID in the GPT tokenizer) to an associated bias value from -100 to 100. You can use this [tokenizer tool](https://platform.openai.com/tokenizer?view=bpe) to convert text to token IDs. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.
 
             As an example, you can pass `{"50256": -100}` to prevent the <|endoftext|> token from being generated.
-        logprobs: &completions_logprobs_configuration
+        logprobs:
           type: integer
           minimum: 0
           maximum: 5
           default: null
           nullable: true
-          description: &completions_logprobs_description |
+          description: |
             Include the log probabilities on the `logprobs` most likely output tokens, as well the chosen tokens. For example, if `logprobs` is 5, the API will return a list of the 5 most likely tokens. The API will always return the `logprob` of the sampled token, so there may be up to `logprobs+1` elements in the response.
 
             The maximum value for `logprobs` is 5.
@@ -2708,7 +3458,7 @@ components:
           default: 16
           example: 16
           nullable: true
-          description: &completions_max_tokens_description |
+          description: |
             The maximum number of [tokens](https://platform.openai.com/tokenizer) that can be generated in the completion.
 
             The token count of your prompt plus `max_tokens` cannot exceed the model's context length. [Example Python code](https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken) for counting tokens.
@@ -2719,7 +3469,7 @@ components:
           default: 1
           example: 1
           nullable: true
-          description: &completions_completions_description |
+          description: |
             How many completions to generate for each prompt.
 
             **Note:** Because this parameter generates many completions, it can quickly consume your token quota. Use carefully and ensure that you have reasonable settings for `max_tokens` and `stop`.
@@ -2731,7 +3481,7 @@ components:
           nullable: true
           description: &completions_presence_penalty_description |
             Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
-        seed: &completions_seed_param
+        seed:
           type: integer
           minimum: -9223372036854775808
           maximum: 9223372036854775807
@@ -2741,7 +3491,7 @@ components:
 
             Determinism is not guaranteed, and you should refer to the `system_fingerprint` response parameter to monitor changes in the backend.
         stop:
-          description: &completions_stop_description >
+          description: >
             Up to 4 sequences where the API will stop generating further tokens. The returned text will not contain the stop sequence.
           default: null
           nullable: true
@@ -2825,7 +3575,7 @@ components:
             properties:
               finish_reason:
                 type: string
-                description: &completion_finish_reason_description |
+                description: |
                   The reason the model stopped generating tokens. This will be `stop` if the model hit a natural stop point or a provided stop sequence,
                   `length` if the maximum number of tokens specified in the request was reached,
                   or `content_filter` if content was omitted due to a flag from our content filters.
@@ -3018,7 +3768,7 @@ components:
                   description: >
                     Specifies the output audio format. Must be one of `wav`, `mp3`,
                     `flac`,
-                    `opus`, or `pcm16`. 
+                    `opus`, or `pcm16`.
             parallel_tool_calls:
               $ref: "#/components/schemas/ParallelToolCalls"
             presence_penalty:
@@ -3128,7 +3878,7 @@ components:
               items:
                 $ref: "#/components/schemas/chatCompletionFunctions"
             user: *end_user_param_configuration
-            user_security_context: 
+            user_security_context:
               $ref: "#/components/schemas/user_security_context"
 
           required:
@@ -3139,7 +3889,7 @@ components:
         User security context contains several parameters that describe the AI application itself, and the end user that interacts with the AI application. These fields assist your security operations teams to investigate and mitigate security incidents by providing a comprehensive approach to protecting your AI applications. [Learn more](https://aka.ms/TP4AI/Documentation/EndUserContext) about protecting AI applications using Microsoft Defender for Cloud.
       type: object
       properties:
-        application_name: 
+        application_name:
           type: string
           description: The name of the application. Sensitive personal information should not be included in this field.
         end_user_id:
@@ -3231,7 +3981,7 @@ components:
       required:
         - content
         - role
-        
+
     chatCompletionRequestSystemMessage:
       type: object
       title: System message
@@ -3776,6 +4526,127 @@ components:
           items:
             type: string
       description: Optional settings to control how fields are processed when using a configured Azure Cosmos DB resource.
+    FilePurpose:
+      type: string
+      description: The possible values denoting the intended usage of a file.
+      enum:
+        - assistants
+        - assistants_output
+        - vision
+      x-ms-enum:
+        name: FilePurpose
+        modelAsString: true
+        values:
+          - value: assistants
+            description: Indicates a file is used as input to agents.
+          - value: assistants_output
+            description: Indicates a file is used as output by agents.
+          - value: vision
+            description: Indicates a file is used as input to a vision operation.
+    FileState:
+      type: string
+      description: The state of the file.
+      enum:
+        - uploaded
+        - pending
+        - running
+        - processed
+        - error
+        - deleting
+        - deleted
+      x-ms-enum:
+        name: FileState
+        modelAsString: true
+        values:
+          - value: uploaded
+            description: The file has been uploaded but it's not yet processed. This state is not returned by Azure OpenAI and exposed only for compatibility. It can be categorized as an inactive state.
+          - value: pending
+            description: The operation was created and is not queued to be processed in the future. It can be categorized as an inactive state.
+          - value: running
+            description: The operation has started to be processed. It can be categorized as an active state.
+          - value: processed
+            description: The operation has successfully processed and is ready for consumption. It can be categorized as a terminal state.
+          - value: error
+            description: The operation has completed processing with a failure and cannot be further consumed. It can be categorized as a terminal state.
+          - value: deleting
+            description: The entity is in the process to be deleted. This state is not returned by Azure OpenAI and exposed only for compatibility. It can be categorized as an active state.
+          - value: deleted
+            description: The entity has been deleted but may still be referenced by other entities predating the deletion. It can be categorized as a terminal state.
+    FileInfo:
+      type: object
+      description: Represents an agent that can call the model and use tools.
+      properties:
+        object:
+          type: string
+          enum:
+            - file
+          description: The object type, which is always 'file'.
+        id:
+          type: string
+          description: The identifier, which can be referenced in API endpoints.
+        bytes:
+          type: integer
+          format: int32
+          description: The size of the file, in bytes.
+        filename:
+          type: string
+          description: The name of the file.
+        created_at:
+          type: integer
+          format: unixtime
+          description: The Unix timestamp, in seconds, representing when this object was created.
+        purpose:
+          $ref: "#/components/schemas/FilePurpose"
+          description: The intended purpose of a file.
+        status:
+          $ref: "#/components/schemas/FileState"
+          description: The state of the file. This field is available in Azure OpenAI only.
+        status_details:
+          type: string
+          description: The error message with details in case processing of this file failed. This field is available in Azure OpenAI only.
+      required:
+        - object
+        - id
+        - bytes
+        - filename
+        - created_at
+        - purpose
+    FileListResponse:
+      type: object
+      description: The response data from a file list operation.
+      properties:
+        object:
+          type: string
+          enum:
+            - list
+          description: The object type, which is always 'list'.
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/FileInfo"
+          description: The files returned for the request.
+      required:
+        - object
+        - data
+    FileDeletionStatus:
+      type: object
+      description: A status response from a file deletion operation.
+      properties:
+        id:
+          type: string
+          description: The ID of the resource specified for deletion.
+        deleted:
+          type: boolean
+          description: A value indicating whether deletion was successful.
+        object:
+          type: string
+          enum:
+            - file
+          description: The object type, which is always 'file'.
+      required:
+        - id
+        - deleted
+        - object
     elasticsearchChatExtensionConfiguration:
       required:
         - parameters
@@ -5072,7 +5943,7 @@ components:
         type:
           type: string
           description: "The type of response format being defined: `text`"
-          enum: 
+          enum:
             - text
       required:
         - type
@@ -5369,19 +6240,19 @@ components:
       description: Specifies the file format for the generated images. Only supported for gpt-image-1.
       type: string
       enum:
-      - png
-      - jpeg
+        - png
+        - jpeg
       default: png
       x-ms-enum:
         name: imagesOutputFormat
         modelAsString: true
         values:
-        - value: png
-          description: The generated image is in png format.
-          name: png
-        - value: jpeg
-          description: The generated image is in jpeg format.
-          name: jpeg
+          - value: png
+            description: The generated image is in png format.
+            name: png
+          - value: jpeg
+            description: The generated image is in jpeg format.
+            name: jpeg
     imageSize:
       description: The size of the generated images.
       type: string
@@ -8164,7 +9035,7 @@ components:
         - id
         - type
         - file_search
-    
+
     runStepDetailsToolCallsFileSearchResultObject:
       title: File search tool call result
       type: object
@@ -9221,7 +10092,7 @@ components:
             - event
             - data
           description: Occurs when a message ends before it is completed.
-    
+
     Annotation:
       oneOf:
         - $ref: "#/components/schemas/FileCitation"
@@ -9736,8 +10607,6 @@ components:
                     $ref: "#/components/schemas/InputItem"
             include:
               type: array
-              description:
-                $ref: "#/components/schemas/includable/description"
               items:
                 x-oaiExpandable: true
                 $ref: "#/components/schemas/includable"
@@ -13261,7 +14130,7 @@ components:
         - y
         - scroll_x
         - scroll_y
-    
+
     StopConfiguration:
       description: |
         Up to 4 sequences where the API will stop generating further tokens. The
@@ -13364,7 +14233,6 @@ components:
         - $ref: "#/components/schemas/FileSearchTool"
         - $ref: "#/components/schemas/FunctionTool"
         - $ref: "#/components/schemas/ComputerTool"
-        - $ref: "#/components/schemas/WebSearchTool"
       x-oaiExpandable: true
     ToolChoiceFunction:
       type: object
@@ -13789,6 +14657,869 @@ components:
         - event
         - data
       description: Occurs when a stream ends.
+    ChatCompletionRequest:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatRequestMessage'
+          description: The collection of context messages associated with this chat completions request.
+        frequency_penalty:
+          type: number
+          format: float
+          minimum: -2
+          maximum: 2
+          description: A value that influences the probability of generated tokens appearing based on their cumulative frequency in generated text.
+        max_tokens:
+          type: integer
+          format: int32
+          minimum: 0
+          description: The maximum number of tokens to generate.
+        modalities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionsModality'
+          description: The modalities that the model is allowed to use for the chat completions response.
+        model:
+          type: string
+          description: ID of the specific AI model to use, if more than one model is available on the endpoint.
+        presence_penalty:
+          type: number
+          format: float
+          minimum: -2
+          maximum: 2
+          description: A value that influences the probability of generated tokens appearing based on their existing presence in generated text.
+        response_format:
+          $ref: '#/components/schemas/ChatCompletionsResponseFormat'
+        seed:
+          type: integer
+          format: int64
+          description: If specified, the system will make a best effort to sample deterministically.
+        stop:
+          type: array
+          items:
+            type: string
+          description: A collection of textual sequences that will end completions generation.
+        stream:
+          type: boolean
+          description: A value indicating whether chat completions should be streamed for this request.
+        temperature:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: The sampling temperature to use that controls the apparent creativity of generated completions.
+        tool_choice:
+          description: If specified, the model will configure which of the provided tools it can use for the chat completions response.
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionsToolDefinition'
+          description: The available tool definitions that the chat completions request can use.
+        top_p:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: An alternative to sampling with temperature.
+    ChatRequestMessage:
+      oneOf:
+        - $ref: '#/components/schemas/ChatRequestSystemMessage'
+        - $ref: '#/components/schemas/ChatRequestUserMessage'
+        - $ref: '#/components/schemas/ChatRequestAssistantMessage'
+        - $ref: '#/components/schemas/ChatRequestToolMessage'
+    ChatRequestSystemMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [system]
+          description: The chat role associated with this message.
+        content:
+          type: string
+          description: The contents of the system message.
+    ChatRequestUserMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [user]
+          description: The chat role associated with this message.
+        content:
+          description: The contents of the user message, with available input types varying by selected model.
+    ChatRequestAssistantMessage:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum: [assistant]
+          description: The chat role associated with this message.
+        content:
+          type: string
+          description: The content of the message.
+        audio:
+          $ref: '#/components/schemas/ChatRequestAudioReference'
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionsToolCall'
+          description: The tool calls that must be resolved and have their outputs appended to subsequent input messages.
+    ChatRequestToolMessage:
+      type: object
+      required:
+        - role
+        - content
+        - tool_call_id
+      properties:
+        role:
+          type: string
+          enum: [tool]
+          description: The chat role associated with this message.
+        content:
+          type: string
+          description: The content of the message.
+        tool_call_id:
+          type: string
+          description: The ID of the tool call resolved by the provided content.
+    ChatRequestAudioReference:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the audio response.
+    ChatCompletionsModality:
+      type: string
+      enum: [text, audio]
+      description: The modalities that the model is allowed to use for the chat completions response.
+    ChatCompletionsResponseFormat:
+      oneOf:
+        - $ref: '#/components/schemas/ChatCompletionsResponseFormatText'
+        - $ref: '#/components/schemas/ChatCompletionsResponseFormatJsonObject'
+        - $ref: '#/components/schemas/ChatCompletionsResponseFormatJsonSchema'
+    ChatCompletionsResponseFormatText:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [text]
+          description: The response format type to use for chat completions.
+    ChatCompletionsResponseFormatJsonObject:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [json_object]
+          description: The response format type to use for chat completions.
+    ChatCompletionsResponseFormatJsonSchema:
+      type: object
+      required:
+        - type
+        - json_schema
+      properties:
+        type:
+          type: string
+          enum: [json_schema]
+          description: The response format type to use for chat completions.
+        json_schema:
+          $ref: '#/components/schemas/ChatCompletionsResponseFormatJsonSchemaDefinition'
+    ChatCompletionsResponseFormatJsonSchemaDefinition:
+      type: object
+      required:
+        - name
+        - schema
+      properties:
+        name:
+          type: string
+          description: The name of the response format.
+        description:
+          type: string
+          description: A description of the response format.
+        schema:
+          description: The definition of the JSON schema.
+        strict:
+          type: boolean
+          default: false
+          description: Whether to enable strict schema adherence when generating the output.
+    ChatCompletionsToolDefinition:
+      type: object
+      required:
+        - type
+        - function
+      properties:
+        type:
+          type: string
+          enum: [function]
+          description: The type of the tool.
+        function:
+          $ref: '#/components/schemas/FunctionDefinition'
+    ChatCompletionsToolCall:
+      type: object
+      required:
+        - id
+        - type
+        - function
+      properties:
+        id:
+          type: string
+          description: The ID of the tool call.
+        type:
+          type: string
+          enum: [function]
+          description: The type of tool call.
+        function:
+          $ref: '#/components/schemas/FunctionCall'
+    FunctionDefinition:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: The name of the function to be called.
+        description:
+          type: string
+          description: A description of what the function does.
+        parameters:
+          description: The parameters the function accepts, described as a JSON Schema object.
+    FunctionCall:
+      type: object
+      required:
+        - name
+        - arguments
+      properties:
+        name:
+          type: string
+          description: The name of the function to call.
+        arguments:
+          type: string
+          description: The arguments to call the function with, as generated by the model in JSON format.
+    ChatMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [system, user, assistant]
+          description: The role of the message author.
+        content:
+          type: string
+          description: The content of the message.
+    ChatCompletionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: A unique identifier for the chat completion.
+        object:
+          type: string
+          default: "chat.completion"
+          description: The object type, which is always chat.completion.
+        created:
+          type: integer
+          format: unixtime
+          description: The Unix timestamp when the chat completion was created.
+        model:
+          type: string
+          description: The model used for the chat completion.
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionChoice'
+          description: A list of chat completion choices.
+        usage:
+          $ref: '#/components/schemas/CompletionsUsage'
+    ChatCompletionChoice:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: The index of the choice in the list of choices.
+        message:
+          $ref: '#/components/schemas/ChatResponseMessage'
+          description: A chat completion message generated by the model.
+        finish_reason:
+          $ref: '#/components/schemas/CompletionsFinishReason'
+    ChatResponseMessage:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/ChatRole'
+        content:
+          type: string
+          description: The content of the message.
+        audio:
+          $ref: '#/components/schemas/ChatCompletionsAudio'
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatCompletionsToolCall'
+          description: The tool calls that must be resolved.
+    ChatRole:
+      type: string
+      enum: [system, developer, user, assistant, tool]
+      description: A description of the intended purpose of a message within a chat completions interaction.
+    ChatCompletionsAudio:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the audio response.
+    CompletionsFinishReason:
+      type: string
+      enum: [stop, length, content_filter, tool_calls]
+      description: Representation of the manner in which a completions response concluded.
+    CompletionsUsage:
+      type: object
+      properties:
+        completion_tokens:
+          type: integer
+          format: int32
+          description: The number of tokens generated across all completions emissions.
+        completion_tokens_details:
+          $ref: '#/components/schemas/CompletionsUsageDetails'
+        prompt_tokens:
+          type: integer
+          format: int32
+          description: The number of tokens in the provided prompts for the completions request.
+        prompt_tokens_details:
+          $ref: '#/components/schemas/PromptUsageDetails'
+        total_tokens:
+          type: integer
+          format: int32
+          description: The total number of tokens processed for the completions request and response.
+    CompletionsUsageDetails:
+      type: object
+      properties:
+        audio_tokens:
+          type: integer
+          format: int32
+          description: The number of tokens corresponding to audio input.
+        total_tokens:
+          type: integer
+          format: int32
+          description: The total number of tokens processed.
+    PromptUsageDetails:
+      type: object
+      properties:
+        audio_tokens:
+          type: integer
+          format: int32
+          description: The number of tokens corresponding to audio input.
+        cached_tokens:
+          type: integer
+          format: int32
+          description: The total number of tokens cached.
+    ExtraParameters:
+      type: string
+      enum: [error, drop, pass-through]
+      description: Controls what happens if extra parameters, undefined by the REST API, are passed in the JSON request payload.
+    Usage:
+      type: object
+      properties:
+        prompt_tokens:
+          type: integer
+        completion_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+    EmbeddingRequest:
+      type: object
+      required:
+        - input
+      properties:
+        input:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+            - type: array
+              items:
+                type: array
+                items:
+                  type: integer
+          description: Input text to embed, encoded as a string, array of strings, or array of token arrays.
+        model:
+          type: string
+          description: ID of the specific AI model to use, if more than one model is available on the endpoint.
+        dimensions:
+          type: integer
+          description: The number of dimensions the resulting output embeddings should have.
+        encoding_format:
+          type: string
+          enum: [float, base64]
+          default: float
+          description: The format to return the embeddings in.
+        input_type:
+          type: string
+          description: The type of the input.
+    EmbeddingResponse:
+      type: object
+      properties:
+        object:
+          type: string
+          default: "list"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddingData'
+        model:
+          type: string
+        usage:
+          $ref: '#/components/schemas/Usage'
+    EmbeddingData:
+      type: object
+      properties:
+        object:
+          type: string
+          default: "embedding"
+        embedding:
+          type: array
+          items:
+            type: number
+            format: float
+        index:
+          type: integer
+    ImageEmbeddingRequest:
+      type: object
+      required:
+        - input
+      properties:
+        input:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageEmbeddingInput'
+          description: An array of image inputs to embed.
+        model:
+          type: string
+          description: ID of the specific AI model to use, if more than one model is available on the endpoint.
+        dimensions:
+          type: integer
+          description: The number of dimensions the resulting output embeddings should have.
+        encoding_format:
+          type: string
+          enum: [float, base64]
+          default: float
+          description: The format to return the embeddings in.
+        input_type:
+          type: string
+          description: The type of the input.
+    ImageEmbeddingInput:
+      type: object
+      required:
+        - image
+      properties:
+        image:
+          type: string
+          description: The image to embed, provided as a base64-encoded string.
+        text:
+          type: string
+          description: Optional input text to embed along with the image for multimodal search.
+    ModelInfo:
+      type: object
+      properties:
+        model_name:
+          type: string
+          description: Name of the AI model.
+        model_type:
+          type: string
+          description: Type of the AI model.
+        model_provider_name:
+          type: string
+          description: Provider of the AI model.
+
+    Connection:
+      type: object
+      description: Response from the list and get connections operations
+      properties:
+        name:
+          type: string
+          description: The friendly name of the connection, provided by the user.
+        id:
+          type: string
+          description: A unique identifier for the connection, generated by the service
+        type:
+          $ref: '#/components/schemas/ConnectionType'
+          description: Category of the connection
+        target:
+          type: string
+          description: The connection URL to be used for this service
+        isDefault:
+          type: boolean
+          description: Whether the connection is tagged as the default connection of its type
+        credentials:
+          oneOf:
+            - $ref: '#/components/schemas/ApiKeyCredentials'
+            - $ref: '#/components/schemas/CustomCredential'
+            - $ref: '#/components/schemas/EntraIDCredentials'
+            - $ref: '#/components/schemas/NoAuthenticationCredentials'
+            - $ref: '#/components/schemas/SASCredentials'
+          description: The credentials used by the connection
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Metadata of the connection
+    ConnectionType:
+      type: string
+      enum:
+        - AzureOpenAI
+        - AzureBlob
+        - AzureStorageAccount
+        - CognitiveSearch
+        - CosmosDB
+        - ApiKey
+        - AppConfig
+        - AppInsights
+        - CustomKeys
+      description: |
+        The Type (or category) of the connection:
+        - AzureOpenAI: Azure OpenAI Service
+        - AzureBlob: Azure Blob Storage, with specified container
+        - AzureStorageAccount: Azure Blob Storage, with container not specified (used by Agents)
+        - CognitiveSearch: Azure AI Search
+        - CosmosDB: CosmosDB
+        - ApiKey: Generic connection that uses API Key authentication
+        - AppConfig: Application Configuration
+        - AppInsights: Application Insights
+        - CustomKeys: Custom Keys
+    ApiKeyCredentials:
+      type: object
+      description: API Key Credential definition
+      required:
+        - type
+        - key
+      properties:
+        type:
+          type: string
+          enum: [ApiKey]
+          description: The type of credential used by the connection
+        key:
+          type: string
+          description: API Key
+    CustomCredential:
+      type: object
+      description: Custom credential definition
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [CustomKeys]
+          description: The type of credential used by the connection
+        keys:
+          type: object
+          description: The credential type
+    EntraIDCredentials:
+      type: object
+      description: Entra ID credential definition
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [AAD]
+          description: The type of credential used by the connection
+    NoAuthenticationCredentials:
+      type: object
+      description: Credentials that do not require authentication
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [None]
+          description: The type of credential used by the connection
+    SASCredentials:
+      type: object
+      description: Shared Access Signature (SAS) credential definition
+      required:
+        - type
+        - SAS
+      properties:
+        type:
+          type: string
+          enum: [SAS]
+          description: The type of credential used by the connection
+        SAS:
+          type: string
+          description: SAS token
+    PagedConnection:
+      type: object
+      description: Paged collection of Connection objects
+      properties:
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connection'
+          description: The list of connections.
+        nextLink:
+          type: string
+          description: The URL to the next page of results.
+    DatasetVersion:
+      type: object
+      description: Dataset version information
+      properties:
+        name:
+          type: string
+          description: The name of the dataset.
+        version:
+          type: string
+          description: The version ID of the dataset version.
+        description:
+          type: string
+          description: Description of the dataset version.
+        dataPath:
+          type: string
+          description: Path to the dataset data.
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+          description: Additional properties for the dataset version.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Tags associated with the dataset version.
+        createdBy:
+          type: string
+          description: User who created the dataset version.
+        createdDate:
+          type: string
+          format: date-time
+          description: Date when the dataset version was created.
+        modifiedBy:
+          type: string
+          description: User who last modified the dataset version.
+        modifiedDate:
+          type: string
+          format: date-time
+          description: Date when the dataset version was last modified.
+    PagedDatasetVersion:
+      type: object
+      description: Paged collection of DatasetVersion objects
+      properties:
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatasetVersion'
+          description: The list of dataset versions.
+        nextLink:
+          type: string
+          description: The URL to the next page of results.
+    DatasetCredentials:
+      type: object
+      description: Credentials for accessing a dataset
+      properties:
+        credentialType:
+          type: string
+          description: The type of credential.
+        connectionString:
+          type: string
+          description: Connection string for the dataset.
+        accountKey:
+          type: string
+          description: Account key for authentication.
+        sasToken:
+          type: string
+          description: SAS token for authentication.
+        containerName:
+          type: string
+          description: Container name for blob storage.
+    PendingUploadCredential:
+      type: object
+      description: Credentials for pending upload operations
+      properties:
+        uploadUrl:
+          type: string
+          description: URL for uploading the dataset.
+        sasToken:
+          type: string
+          description: SAS token for upload authentication.
+        expiryTime:
+          type: string
+          format: date-time
+          description: Expiry time for the upload credentials.
+    Deployment:
+      type: object
+      description: AI model deployment information
+      properties:
+        name:
+          type: string
+          description: The name of the deployment.
+        id:
+          type: string
+          description: Unique identifier for the deployment.
+        modelName:
+          type: string
+          description: Name of the deployed model.
+        modelVersion:
+          type: string
+          description: Version of the deployed model.
+        status:
+          type: string
+          enum: [Creating, Running, Failed, Deleting]
+          description: Current status of the deployment.
+        endpoint:
+          type: string
+          description: Endpoint URL for the deployment.
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+          description: Additional properties for the deployment.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Tags associated with the deployment.
+        createdBy:
+          type: string
+          description: User who created the deployment.
+        createdDate:
+          type: string
+          format: date-time
+          description: Date when the deployment was created.
+        modifiedBy:
+          type: string
+          description: User who last modified the deployment.
+        modifiedDate:
+          type: string
+          format: date-time
+          description: Date when the deployment was last modified.
+    PagedDeployment:
+      type: object
+      description: Paged collection of Deployment objects
+      properties:
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/Deployment'
+          description: The list of deployments.
+        nextLink:
+          type: string
+          description: The URL to the next page of results.
+    IndexVersion:
+      type: object
+      description: Search index version information
+      properties:
+        name:
+          type: string
+          description: The name of the index.
+        version:
+          type: string
+          description: The version ID of the index version.
+        description:
+          type: string
+          description: Description of the index version.
+        indexPath:
+          type: string
+          description: Path to the index data.
+        vectorSize:
+          type: integer
+          description: Size of the vectors in the index.
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+          description: Additional properties for the index version.
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Tags associated with the index version.
+        createdBy:
+          type: string
+          description: User who created the index version.
+        createdDate:
+          type: string
+          format: date-time
+          description: Date when the index version was created.
+        modifiedBy:
+          type: string
+          description: User who last modified the index version.
+        modifiedDate:
+          type: string
+          format: date-time
+          description: Date when the index version was last modified.
+    PagedIndexVersion:
+      type: object
+      description: Paged collection of IndexVersion objects
+      properties:
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/IndexVersion'
+          description: The list of index versions.
+        nextLink:
+          type: string
+          description: The URL to the next page of results.
+    Azure.Core.Foundations.ErrorResponse:
+      type: object
+      description: A response containing error details.
+      required:
+        - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Azure.Core.Foundations.Error'
+          description: The error object.
+    Azure.Core.Foundations.Error:
+      type: object
+      description: The error object.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: One of a server-defined set of error codes.
+        message:
+          type: string
+          description: A human-readable representation of the error.
+        target:
+          type: string
+          description: The target of the error.
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/Azure.Core.Foundations.Error'
+          description: An array of details about specific errors that led to this reported error.
+        innererror:
+          $ref: '#/components/schemas/Azure.Core.Foundations.InnerError'
+          description: An object containing more specific information than the current object about the error.
+    Azure.Core.Foundations.InnerError:
+      type: object
+      description: An object containing more specific information about the error. As per Azure REST API guidelines - https://aka.ms/AzureRestApiGuidelines#handling-errors.
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: One of a server-defined set of error codes.
+        innererror:
+          $ref: '#/components/schemas/Azure.Core.Foundations.InnerError'
+          description: Inner error.
+
   securitySchemes:
     bearer:
       type: oauth2
@@ -13802,3 +15533,10 @@ components:
       type: apiKey
       name: api-key
       in: header
+    OAuth2Auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes:
+            https://ai.azure.com/.default: ""

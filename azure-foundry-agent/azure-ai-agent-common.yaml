@@ -5,7 +5,7 @@ info:
     This OpenAPI specification defines the Azure AI Foundry Agent Service REST API.
     It is a stateful, resource-oriented API for creating, managing, and running sophisticated AI agents (also known as Assistants).[9, 10]
     The API follows the same protocol as the Azure OpenAI Assistants API, allowing for the use of compatible tools and SDKs.[9]
-  version: "2025-05-16"
+  version: "2024-05-01-preview"
 servers:
   - url: https://{resource-name}.services.ai.azure.com
     variables:
